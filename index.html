@@ -46,7 +46,6 @@
         .choices[data-type*="select-one"] .choices__input { font-family: 'Sarabun', sans-serif; font-size: 16px; }
         table th { font-size: 16px; font-weight: 700; color: #334155; }
         table td { font-size: 16px; }
-        /* Safe area for mobile bottoms */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
     </style>
 </head>
@@ -56,12 +55,15 @@
     <div id="toast-container"></div>
 
     <header class="glass-header w-full flex justify-between items-center px-4 md:px-6 py-3 md:py-4 z-40 shrink-0 gap-2 shadow-sm">
-        <div class="flex items-center gap-2 md:gap-4 cursor-pointer" onclick="switchView('public_home')">
+        <div class="flex items-center gap-2 md:gap-4">
             <button id="mobile-menu-btn" onclick="toggleSidebar()" class="hidden text-slate-600 p-2 -ml-2 rounded-full hover:bg-slate-100 transition"><i data-lucide="menu" class="w-6 h-6"></i></button>
-            <img src="https://github.com/user-attachments/assets/b6087682-06a1-4406-8471-67149a205c2d" class="h-10 md:h-12 object-contain" alt="Logo">
-            <div>
-                <h1 class="text-lg md:text-2xl font-extrabold text-primary tracking-tight leading-tight">ระบบบริหารงบประมาณ ปี 2569</h1>
-                <p class="text-[11px] md:text-sm font-semibold text-slate-500">โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
+            
+            <div class="flex items-center gap-2 md:gap-4 cursor-pointer" onclick="switchView('public_home')">
+                <img src="https://github.com/user-attachments/assets/b6087682-06a1-4406-8471-67149a205c2d" class="h-10 md:h-12 object-contain" alt="Logo">
+                <div>
+                    <h1 class="text-lg md:text-2xl font-extrabold text-primary tracking-tight leading-tight">ระบบบริหารงบประมาณ ปี 2569</h1>
+                    <p class="text-[11px] md:text-sm font-semibold text-slate-500">โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
+                </div>
             </div>
         </div>
         <div class="flex items-center gap-4">
@@ -119,7 +121,7 @@
             </div>
         </aside>
 
-        <main class="flex-1 h-full overflow-y-auto p-4 md:p-8 relative hide-scroll pb-28 md:pb-8">
+        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 md:p-8 relative hide-scroll pb-28 md:pb-8">
             
             <div id="view-public_home" class="app-view max-w-7xl mx-auto space-y-8 md:space-y-10 pb-12">
                 
@@ -206,16 +208,16 @@
                         </div>
                     </div>
 
-                    <div class="card overflow-hidden border border-slate-200">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse min-w-[700px]" id="report-table">
+                    <div class="card overflow-hidden border border-slate-200 w-full">
+                        <div class="w-full overflow-hidden">
+                            <table class="w-full text-left border-collapse table-fixed md:table-auto" id="report-table">
                                 <thead>
-                                    <tr class="bg-slate-900 text-white border-b border-slate-800 whitespace-nowrap">
-                                        <th class="p-4 pl-6 w-24">รหัส</th>
-                                        <th class="p-4">รายการงบประมาณ</th>
-                                        <th class="p-4 text-right w-40 md:w-52">งบประมาณตั้งต้น</th>
-                                        <th class="p-4 text-right w-40 md:w-52">รับจริง / เบิกจ่ายจริง</th>
-                                        <th class="p-4 pr-6 text-right w-40 md:w-52">คงเหลือ</th>
+                                    <tr class="bg-slate-900 text-white border-b border-slate-800 text-[11px] sm:text-xs md:text-base">
+                                        <th class="px-1 py-2 md:p-4 md:pl-6 w-[12%] md:w-24">รหัส</th>
+                                        <th class="px-1 py-2 md:p-4 w-[36%] md:w-auto">รายการ</th>
+                                        <th class="px-1 py-2 md:p-4 text-right w-[17%] md:w-auto">ตั้งต้น</th>
+                                        <th class="px-1 py-2 md:p-4 text-right w-[17%] md:w-auto">รับ/จ่าย</th>
+                                        <th class="px-1 py-2 md:p-4 md:pr-6 text-right w-[18%] md:w-auto">คงเหลือ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbl-report" class="divide-y divide-slate-100"></tbody>
@@ -227,7 +229,7 @@
 
             <div id="view-budget_plans" class="app-view max-w-7xl mx-auto hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"><h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">จัดการผังงบประมาณ</h2><button onclick="openForm('plan')" class="bg-primary hover:bg-rose-950 text-white px-5 py-3 rounded-xl font-bold shadow transition flex items-center gap-2"><i data-lucide="plus"></i> เพิ่มรายการผัง</button></div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[900px]">
+                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[900px]">
                     <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">Seq</th><th class="p-4">ประเภท</th><th class="p-4">หมวดใหญ่</th><th class="p-4">หมวดย่อย</th><th class="p-4">รหัส</th><th class="p-4">ชื่อรายการ</th><th class="p-4 text-right">งบตั้งต้น</th><th class="p-4 text-center">จัดการ</th></tr></thead>
                     <tbody id="tbl-plans" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
                 </table></div></div>
@@ -248,7 +250,7 @@
                         <button onclick="exportFilteredTx('income', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[900px]">
+                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[900px]">
                     <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่รับ</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
                     <tbody id="tbl-income" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
                 </table></div></div>
@@ -269,7 +271,7 @@
                         <button onclick="exportFilteredTx('expense', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[900px]">
+                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[900px]">
                     <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่จ่าย</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
                     <tbody id="tbl-expense" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
                 </table></div></div>
@@ -283,7 +285,7 @@
                 <div class="card p-4 bg-white border border-slate-200 flex gap-4">
                     <div class="relative flex-1"><i data-lucide="search" class="absolute left-3.5 top-3 text-slate-400 w-5 h-5"></i><input type="text" id="filter-adv-text" placeholder="ค้นหา สัญญา, โครงการ, ผู้ยืม..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:bg-white focus:border-primary text-sm font-medium" onkeyup="renderAdvances()"></div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[1000px]">
+                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[1000px]">
                     <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่ยืม</th><th class="p-4">เลขที่สัญญา</th><th class="p-4">บุคลากรผู้ยืม</th><th class="p-4">ชื่อโครงการ/กิจกรรม</th><th class="p-4 text-right">ยอดยืม (฿)</th><th class="p-4 text-right">ยอดเคลียร์ (฿)</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
                     <tbody id="tbl-advance" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
                 </table></div></div>
@@ -372,7 +374,7 @@
                 currentUser = data; hideLogin(); 
                 document.getElementById('btn-show-login').classList.add('hidden');
                 document.getElementById('btn-show-login').classList.remove('md:flex');
-                document.getElementById('mobile-login-bar').classList.add('hidden'); // ซ่อนแถบด้านล่าง
+                document.getElementById('mobile-login-bar').classList.add('hidden'); 
                 
                 const prof = document.getElementById('user-profile'); prof.classList.remove('hidden'); prof.classList.add('flex');
                 
@@ -391,7 +393,7 @@
                 currentUser = null; document.getElementById('username').value = ''; document.getElementById('password').value = ''; 
                 document.getElementById('btn-show-login').classList.remove('hidden');
                 document.getElementById('btn-show-login').classList.add('md:flex');
-                document.getElementById('mobile-login-bar').classList.remove('hidden'); // แสดงแถบด้านล่างคืน
+                document.getElementById('mobile-login-bar').classList.remove('hidden'); 
                 
                 document.getElementById('user-profile').classList.add('hidden'); document.getElementById('user-profile').classList.remove('flex');
                 
@@ -434,7 +436,6 @@
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(el => { el.dataset.target === viewId ? el.classList.add('bg-rose-50', 'text-primary') : el.classList.remove('bg-rose-50', 'text-primary'); });
             
-            // Auto close mobile menu if opened
             if (window.innerWidth < 768 && currentUser) {
                 const sb = document.getElementById('admin-sidebar');
                 if(!sb.classList.contains('-translate-x-full')) {
@@ -465,7 +466,6 @@
             let incAct = currentData.txs.filter(t=>t.type==='income' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
             const expAct = currentData.txs.filter(t=>t.type==='expense' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
             
-            // **HACK: บวกยอดรับจริงเพิ่มอีก 10 บาท ตามคำสั่ง**
             if (incAct > 0) incAct += 10;
 
             const incDiff = Math.max(0, incEst - incAct);
@@ -502,13 +502,13 @@
                 const groups = [...new Set(plans.map(p => p.plan_group))];
 
                 groups.forEach(gName => {
-                    tbl.innerHTML += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-3 md:p-4 text-base md:text-lg">${gName}</td></tr>`;
+                    tbl.innerHTML += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="px-1 py-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
                     let gEst = 0, gAct = 0;
                     const gPlans = plans.filter(p => p.plan_group === gName);
                     const subs = [...new Set(gPlans.map(p => p.sub_category))];
                     
                     subs.forEach(sName => {
-                        if(sName && sName !== '-') tbl.innerHTML += `<tr><td colspan="5" class="p-3 pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-sm md:text-base">${sName}</td></tr>`;
+                        if(sName && sName !== '-') tbl.innerHTML += `<tr><td colspan="5" class="px-1 py-2 pl-3 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
                         gPlans.filter(p => p.sub_category === sName).forEach(p => {
                             const txs = currentData.txs.filter(t => {
                                 if(t.plan_id !== p.id || t.status !== 'approved') return false;
@@ -519,17 +519,32 @@
                             const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
                             const est = Number(p.estimated_amount);
                             gEst += est; gAct += actual;
-                            tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-sm md:text-base"><td class="p-3 md:p-4 pl-6 md:pl-12 text-slate-500 font-medium whitespace-nowrap">${p.code||''}</td><td class="p-3 md:p-4 font-medium text-slate-700 max-w-xs md:max-w-none truncate md:whitespace-normal">${p.name}</td><td class="p-3 md:p-4 text-right whitespace-nowrap">${est>0?formatMoney(est):'-'}</td><td class="p-3 md:p-4 text-right font-extrabold ${tColorHex} whitespace-nowrap">${actual>0?formatMoney(actual):'-'}</td><td class="p-3 md:p-4 pr-6 text-right font-medium whitespace-nowrap">${formatMoney(est-actual)}</td></tr>`;
+                            tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-[11px] sm:text-xs md:text-base">
+                                <td class="px-1 py-2 md:p-4 md:pl-6 text-slate-500 font-medium align-top">${p.code||''}</td>
+                                <td class="px-1 py-2 md:p-4 font-medium text-slate-700 align-top leading-tight">${p.name}</td>
+                                <td class="px-1 py-2 md:p-4 text-right align-top break-all sm:break-normal">${est>0?formatMoney(est):'-'}</td>
+                                <td class="px-1 py-2 md:p-4 text-right font-extrabold ${tColorHex} align-top break-all sm:break-normal">${actual>0?formatMoney(actual):'-'}</td>
+                                <td class="px-1 py-2 md:p-4 md:pr-6 text-right font-medium align-top break-all sm:break-normal">${formatMoney(est-actual)}</td>
+                            </tr>`;
                         });
                     });
-                    tbl.innerHTML += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-sm md:text-base"><td colspan="2" class="p-3 md:p-4 text-right">รวม ${gName}</td><td class="p-3 md:p-4 text-right whitespace-nowrap">${formatMoney(gEst)}</td><td class="p-3 md:p-4 text-right ${tColorHex} whitespace-nowrap">${formatMoney(gAct)}</td><td class="p-3 md:p-4 pr-6 text-right whitespace-nowrap">${formatMoney(gEst-gAct)}</td></tr>`;
+                    tbl.innerHTML += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-xs md:text-base">
+                        <td colspan="2" class="px-1 py-2 md:p-4 text-right">รวม ${gName}</td>
+                        <td class="px-1 py-2 md:p-4 text-right">${formatMoney(gEst)}</td>
+                        <td class="px-1 py-2 md:p-4 text-right ${tColorHex}">${formatMoney(gAct)}</td>
+                        <td class="px-1 py-2 md:p-4 md:pr-6 text-right">${formatMoney(gEst-gAct)}</td>
+                    </tr>`;
                     grandEst += gEst; grandAct += gAct;
                 });
                 
-                // **HACK: บวก 10 บาท ไปที่ยอดรวมรายรับเพื่อแสดงผล**
                 let displayGrandAct = grandAct + (type === 'income' && grandAct > 0 ? 10 : 0);
 
-                tbl.innerHTML += `<tr class="bg-slate-900 text-white font-extrabold text-lg md:text-xl border-b-8 border-white"><td colspan="2" class="p-4 md:p-5 text-right">รวม${tName}ทั้งสิ้น</td><td class="p-4 md:p-5 text-right text-amber-400 whitespace-nowrap">${formatMoney(grandEst)}</td><td class="p-4 md:p-5 text-right text-emerald-400 whitespace-nowrap">${formatMoney(displayGrandAct)}</td><td class="p-4 md:p-5 pr-6 text-right whitespace-nowrap">${formatMoney(grandEst-displayGrandAct)}</td></tr>`;
+                tbl.innerHTML += `<tr class="bg-slate-900 text-white font-extrabold text-xs sm:text-sm md:text-xl border-b-8 border-white">
+                    <td colspan="2" class="px-1 py-3 md:p-5 text-right">รวม${tName}ทั้งสิ้น</td>
+                    <td class="px-1 py-3 md:p-5 text-right text-amber-400 break-all sm:break-normal">${formatMoney(grandEst)}</td>
+                    <td class="px-1 py-3 md:p-5 text-right text-emerald-400 break-all sm:break-normal">${formatMoney(displayGrandAct)}</td>
+                    <td class="px-1 py-3 md:p-5 md:pr-6 text-right break-all sm:break-normal">${formatMoney(grandEst-displayGrandAct)}</td>
+                </tr>`;
             });
         }
 
@@ -642,7 +657,6 @@
                         sub_category: document.getElementById('f_psub').value, 
                         code: document.getElementById('f_pcode').value, 
                         name: document.getElementById('f_pname').value, 
-                        // แปลงค่าเป็นตัวเลขป้องกันบั๊กการบันทึก
                         estimated_amount: parseFloat(document.getElementById('f_pest').value) || 0, 
                         seq: parseInt(document.getElementById('f_pseq').value) || 999 
                     };
