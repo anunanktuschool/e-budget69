@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTU Budget Management System : Executive Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+                    colors: {
+                        primary: '#881337', // KTU Burgundy
+                        secondary: '#D97706', 
+                        slate: '#1E293B', 
+                        light: '#F8FAFC'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #F1F5F9; color: #1E293B; font-size: 16px; }
+        .glass-header { background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+        .card { background-color: #ffffff; border-radius: 1.5rem; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; }
+        .card-exec { background: linear-gradient(135deg, #ffffff 0%, #F8FAFC 100%); border: 1px solid #E2E8F0; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .spinner { border: 4px solid #F1F5F9; border-top: 4px solid #881337; border-radius: 50%; width: 56px; height: 56px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #toast-container { position: fixed; top: 90px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; }
+        .toast { padding: 16px 24px; border-radius: 16px; color: white; font-weight: 600; font-size: 16px; opacity: 0; transform: translateY(-20px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display:flex; align-items:center; gap:10px;}
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background-color: #065F46; } 
+        .toast.error { background-color: #9F1239; } 
+        .choices__inner { border-radius: 0.75rem; border-color: #CBD5E1; background-color: #fff; font-size: 16px; padding: 0.5rem 0.75rem; min-height: 48px; display:flex; align-items:center;}
+        .choices[data-type*="select-one"] .choices__input { font-family: 'Sarabun', sans-serif; font-size: 16px; }
+        table th { font-size: 16px; font-weight: 700; color: #334155; }
+        table td { font-size: 16px; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
+    <div id="toast-container"></div>
+
+    <header class="glass-header w-full flex justify-between items-center px-6 py-4 z-40 shrink-0">
+        <div class="flex items-center gap-4 cursor-pointer" onclick="switchView('public_home')">
+            <img src="https://github.com/user-attachments/assets/b6087682-06a1-4406-8471-67149a205c2d" class="h-12 object-contain" alt="Logo">
+            <div>
+                <h1 class="text-2xl font-extrabold text-primary tracking-tight">ระบบบริหารงบประมาณ ปีการศึกษา 2569</h1>
+                <p class="text-xs md:text-sm font-semibold text-slate-500">โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="btn-show-login" onclick="showLogin()" class="bg-white hover:bg-rose-50 text-primary border border-rose-200 hover:border-rose-300 px-6 py-2.5 rounded-full font-bold shadow-sm hover:shadow transition flex items-center gap-2.5 group">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span>เข้าสู่ระบบเจ้าหน้าที่</span>
+                <i data-lucide="shield-check" class="w-4 h-4 text-rose-800 group-hover:scale-110 transition"></i>
+            </button>
+            <div id="user-profile" class="hidden items-center gap-4 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="text-right hidden sm:block">
+                    <p id="user-name" class="font-bold text-slate-800 text-base leading-tight">Name</p>
+                    <p id="user-role" class="text-xs font-semibold text-primary mt-0.5">Role</p>
+                </div>
+                <button onclick="confirmLogout()" class="bg-rose-50 hover:bg-rose-100 text-rose-800 p-2.5 rounded-xl transition" title="ออกจากระบบ"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div id="login-modal" class="fixed inset-0 bg-slate-900/70 z-50 hidden flex items-center justify-center backdrop-blur-md px-4 transition-opacity">
+        <div class="bg-white p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">ลงชื่อเข้าใช้</h2>
+                    <p class="text-sm text-slate-400 font-medium mt-1">เฉพาะฝ่ายบริหารการเงินและบัญชี</p>
+                </div>
+                <button onclick="hideLogin()" class="text-slate-400 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 rounded-full p-2.5 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-2">ชื่อผู้ใช้งาน (Username)</label><input type="text" id="username" required class="w-full px-5 py-3.5 border border-slate-300 rounded-2xl outline-none focus:ring-2 focus:ring-primary focus:border-primary text-lg font-medium"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-2">รหัสผ่าน (Password)</label><input type="password" id="password" required class="w-full px-5 py-3.5 border border-slate-300 rounded-2xl outline-none focus:ring-2 focus:ring-primary focus:border-primary text-lg"></div>
+                <button type="submit" class="w-full bg-primary hover:bg-rose-950 text-white py-4 rounded-2xl font-bold text-lg transition shadow-lg hover:shadow-xl mt-4">ยืนยันตัวตน</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="flex-1 flex overflow-hidden">
+        
+        <aside id="admin-sidebar" class="hidden w-72 bg-white border-r border-slate-200 h-full shadow-sm flex-col z-10 overflow-y-auto shrink-0">
+            <div class="p-6">
+                <p class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 px-3">เมนูระบบหลังบ้าน</p>
+                <nav class="space-y-1.5" id="desktop-nav"></nav>
+            </div>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto p-4 md:p-8 relative hide-scroll">
+            
+            <div id="view-public_home" class="app-view max-w-7xl mx-auto space-y-10 pb-12">
+                
+                <section>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-3 bg-primary text-white rounded-2xl shadow-md"><i data-lucide="bar-chart-3" class="w-7 h-7"></i></div>
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Executive Dashboard</h2>
+                            <p class="text-slate-500 font-medium text-sm">สรุปสถานะการเงินและงบประมาณ ประจำปีการศึกษา 2569</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div class="card card-exec p-8 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                            <div class="flex justify-between items-start mb-6">
+                                <div><span class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Income Module</span><h3 class="text-2xl font-extrabold text-slate-800 mt-2">งบประมาณรายรับ</h3></div>
+                                <div class="p-4 bg-emerald-50 rounded-2xl text-emerald-700"><i data-lucide="trending-up" class="w-8 h-8"></i></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-baseline border-b border-slate-100 pb-3"><span class="text-slate-500 font-semibold">งบตั้งต้น (ประมาณการรับ)</span><span class="text-xl font-bold text-slate-700" id="exec-inc-est">฿0</span></div>
+                                <div class="flex justify-between items-baseline border-b border-slate-100 pb-3"><span class="text-slate-500 font-semibold">รายรับจริง (เข้าระบบแล้ว)</span><span class="text-2xl font-extrabold text-emerald-700" id="exec-inc-act">฿0</span></div>
+                                <div class="flex justify-between items-baseline pt-1"><span class="text-rose-600 font-bold">ยอดที่ยังไม่ได้รับ (ค้างรับ)</span><span class="text-xl font-extrabold text-rose-600" id="exec-inc-diff">฿0</span></div>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-slate-100"><div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden"><div id="exec-inc-bar" class="bg-emerald-600 h-full rounded-full transition-all duration-1000" style="width: 0%"></div></div></div>
+                        </div>
+
+                        <div class="card card-exec p-8 relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-40 h-40 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                            <div class="flex justify-between items-start mb-6">
+                                <div><span class="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-900 uppercase tracking-wider">Expense Module</span><h3 class="text-2xl font-extrabold text-slate-800 mt-2">งบประมาณรายจ่าย</h3></div>
+                                <div class="p-4 bg-rose-50 rounded-2xl text-rose-800"><i data-lucide="trending-down" class="w-8 h-8"></i></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-baseline border-b border-slate-100 pb-3"><span class="text-slate-500 font-semibold">งบตั้งต้น (งบที่ได้รับอนุมัติ)</span><span class="text-xl font-bold text-slate-700" id="exec-exp-est">฿0</span></div>
+                                <div class="flex justify-between items-baseline border-b border-slate-100 pb-3"><span class="text-slate-500 font-semibold">รายจ่ายจริง (เบิกจ่ายแล้ว)</span><span class="text-2xl font-extrabold text-rose-800" id="exec-exp-act">฿0</span></div>
+                                <div class="flex justify-between items-baseline pt-1"><span class="text-blue-700 font-bold">คงเหลือเบิกจ่าย</span><span class="text-xl font-extrabold text-blue-700" id="exec-exp-diff">฿0</span></div>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-slate-100"><div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden"><div id="exec-exp-bar" class="bg-rose-800 h-full rounded-full transition-all duration-1000" style="width: 0%"></div></div></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card p-8"><h4 class="text-lg font-bold text-slate-700 mb-6 flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-emerald-600"></i> สัดส่วนการรับเงินจริงเทียบเป้าหมาย</h4><div class="h-64"><canvas id="chartIncome"></canvas></div></div>
+                        <div class="card p-8"><h4 class="text-lg font-bold text-slate-700 mb-6 flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-rose-800"></i> สัดส่วนการใช้งบประมาณ</h4><div class="h-64"><canvas id="chartExpense"></canvas></div></div>
+                    </div>
+                </section>
+
+                <hr class="border-slate-200 my-8">
+
+                <section class="pt-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-800">รายงานรายละเอียดงบประมาณ</h2>
+                            <p class="text-slate-500 font-medium text-sm mt-1">อ้างอิงผังรายการรับ-จ่าย โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
+                        </div>
+                        <button onclick="exportReport()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center gap-2.5 shrink-0">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> ดาวน์โหลดรายงาน Excel
+                        </button>
+                    </div>
+
+                    <div class="card p-6 mb-6 flex flex-col md:flex-row gap-6 bg-white border border-slate-200">
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">ค้นหาจากชื่อรายการ / รหัสงบ</label>
+                            <div class="relative"><i data-lucide="search" class="absolute left-4 top-3.5 text-slate-400 w-5 h-5"></i><input type="text" id="pub-search" placeholder="พิมพ์คำค้นหาที่ต้องการ..." class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-primary text-base font-medium transition" onkeyup="renderReport()"></div>
+                        </div>
+                        <div class="md:w-96">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">เลือกดูยอดสะสมถึงเดือน</label>
+                            <select id="pub-month" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl outline-none focus:bg-white focus:border-primary text-base font-bold transition cursor-pointer" onchange="renderReport()">
+                                <option value="all">ตลอดปีการศึกษา (ยอดรวมทั้งปี)</option>
+                                <option value="2026-05">พฤษภาคม 2569 (ยอดสะสม)</option>
+                                <option value="2026-06">มิถุนายน 2569 (ยอดสะสม)</option>
+                                <option value="2026-07">กรกฎาคม 2569 (ยอดสะสม)</option>
+                                <option value="2026-08">สิงหาคม 2569 (ยอดสะสม)</option>
+                                <option value="2026-09">กันยายน 2569 (ยอดสะสม)</option>
+                                <option value="2026-10">ตุลาคม 2569 (ยอดสะสม)</option>
+                                <option value="2026-11">พฤศจิกายน 2569 (ยอดสะสม)</option>
+                                <option value="2026-12">ธันวาคม 2569 (ยอดสะสม)</option>
+                                <option value="2027-01">มกราคม 2570 (ยอดสะสม)</option>
+                                <option value="2027-02">กุมภาพันธ์ 2570 (ยอดสะสม)</option>
+                                <option value="2027-03">มีนาคม 2570 (ยอดสะสม)</option>
+                                <option value="2027-04">เมษายน 2570 (ยอดสะสม)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card overflow-hidden border border-slate-200">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="report-table">
+                                <thead>
+                                    <tr class="bg-slate-900 text-white border-b border-slate-800">
+                                        <th class="p-4 pl-6 w-24">รหัส</th>
+                                        <th class="p-4">รายการงบประมาณ</th>
+                                        <th class="p-4 text-right w-52">งบประมาณตั้งต้น</th>
+                                        <th class="p-4 text-right w-52">รับจริง / เบิกจ่ายจริง</th>
+                                        <th class="p-4 pr-6 text-right w-52">คงเหลือ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbl-report" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-budget_plans" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                <div class="flex justify-between items-center"><h2 class="text-3xl font-extrabold text-slate-800">จัดการโครงสร้างผังงบประมาณ</h2><button onclick="openForm('plan')" class="bg-primary hover:bg-rose-950 text-white px-5 py-3 rounded-xl font-bold shadow transition flex items-center gap-2"><i data-lucide="plus"></i> เพิ่มรายการผัง</button></div>
+                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left">
+                    <thead><tr class="bg-slate-100 text-slate-700 border-b"><th class="p-4">Seq</th><th class="p-4">ประเภท</th><th class="p-4">หมวดใหญ่</th><th class="p-4">หมวดย่อย</th><th class="p-4">รหัส</th><th class="p-4">ชื่อรายการ</th><th class="p-4 text-right">งบตั้งต้น</th><th class="p-4 text-center">จัดการ</th></tr></thead>
+                    <tbody id="tbl-plans" class="divide-y divide-slate-100 text-base"></tbody>
+                </table></div></div>
+            </div>
+
+            <div id="view-income" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-3xl font-extrabold text-slate-800">บันทึกรายการรับจริง</h2>
+                    <button onclick="openForm('income')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-3 rounded-xl font-bold shadow transition flex items-center gap-2"><i data-lucide="plus-circle"></i> บันทึกรับเงินใหม่</button>
+                </div>
+                <div class="card p-5 bg-white border border-slate-200 flex flex-wrap gap-4 items-end">
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">ค้นหาวันที่เฉพาะ</label><input type="date" id="filter-inc-date" class="border p-2.5 rounded-xl text-sm font-bold outline-none" onchange="renderTx('income')"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">หรือเลือกเดือน</label><input type="month" id="filter-inc-month" class="border p-2.5 rounded-xl text-sm font-bold outline-none" onchange="renderTx('income')"></div>
+                    <div class="flex-1 min-w-[200px]"><label class="block text-xs font-bold text-slate-500 mb-1">พิมพ์ค้นหาชื่อรายการ/หมายเหตุ</label><input type="text" id="filter-inc-text" placeholder="ค้นหา..." class="border p-2.5 rounded-xl text-sm w-full outline-none" onkeyup="renderTx('income')"></div>
+                    <button onclick="resetFilter('inc')" class="text-xs font-bold text-slate-400 p-3 hover:bg-slate-100 rounded-xl">ล้างตัวกรอง</button>
+                    <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-auto">
+                        <button onclick="exportFilteredTx('income', 'day')" class="bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar"></i> Export รายวัน</button>
+                        <button onclick="exportFilteredTx('income', 'month')" class="bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> Export รายเดือน</button>
+                    </div>
+                </div>
+                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left">
+                    <thead><tr class="bg-slate-100 text-slate-700 border-b"><th class="p-4">วันที่รับ</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
+                    <tbody id="tbl-income" class="divide-y divide-slate-100 text-base"></tbody>
+                </table></div></div>
+            </div>
+
+            <div id="view-expense" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-3xl font-extrabold text-slate-800">บันทึกรายการจ่ายจริง</h2>
+                    <button onclick="openForm('expense')" class="bg-primary hover:bg-rose-950 text-white px-6 py-3 rounded-xl font-bold shadow transition flex items-center gap-2"><i data-lucide="plus-circle"></i> บันทึกเบิกจ่ายใหม่</button>
+                </div>
+                <div class="card p-5 bg-white border border-slate-200 flex flex-wrap gap-4 items-end">
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">ค้นหาวันที่เฉพาะ</label><input type="date" id="filter-exp-date" class="border p-2.5 rounded-xl text-sm font-bold outline-none" onchange="renderTx('expense')"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1">หรือเลือกเดือน</label><input type="month" id="filter-exp-month" class="border p-2.5 rounded-xl text-sm font-bold outline-none" onchange="renderTx('expense')"></div>
+                    <div class="flex-1 min-w-[200px]"><label class="block text-xs font-bold text-slate-500 mb-1">พิมพ์ค้นหาชื่อรายการ/หมายเหตุ</label><input type="text" id="filter-exp-text" placeholder="ค้นหา..." class="border p-2.5 rounded-xl text-sm w-full outline-none" onkeyup="renderTx('expense')"></div>
+                    <button onclick="resetFilter('exp')" class="text-xs font-bold text-slate-400 p-3 hover:bg-slate-100 rounded-xl">ล้างตัวกรอง</button>
+                    <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0 ml-auto">
+                        <button onclick="exportFilteredTx('expense', 'day')" class="bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar"></i> Export รายวัน</button>
+                        <button onclick="exportFilteredTx('expense', 'month')" class="bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> Export รายเดือน</button>
+                    </div>
+                </div>
+                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left">
+                    <thead><tr class="bg-slate-100 text-slate-700 border-b"><th class="p-4">วันที่จ่าย</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
+                    <tbody id="tbl-expense" class="divide-y divide-slate-100 text-base"></tbody>
+                </table></div></div>
+            </div>
+
+            <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-3xl font-extrabold text-slate-800">สัญญายืมเงินทดรองจ่าย</h2>
+                    <div class="flex gap-2"><button onclick="exportData('advances')" class="bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm">Excel สัญญาทั้งหมด</button><button onclick="openForm('advance_create')" class="bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
+                </div>
+                <div class="card p-4 bg-white border border-slate-200 flex gap-4">
+                    <div class="relative flex-1"><i data-lucide="search" class="absolute left-3.5 top-3 text-slate-400 w-5 h-5"></i><input type="text" id="filter-adv-text" placeholder="พิมพ์ค้นหาจาก เลขที่สัญญา, ชื่อกิจกรรม/โครงการ หรือ ชื่อบุคลากรผู้ยืม..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:bg-white focus:border-primary text-sm font-medium" onkeyup="renderAdvances()"></div>
+                </div>
+                <div class="card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left">
+                    <thead><tr class="bg-slate-100 text-slate-700 border-b"><th class="p-4">วันที่ยืม</th><th class="p-4">เลขที่สัญญา</th><th class="p-4">บุคลากรผู้ยืม</th><th class="p-4">ชื่อโครงการ/กิจกรรม</th><th class="p-4 text-right">ยอดยืม (฿)</th><th class="p-4 text-right">ยอดเคลียร์ (฿)</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
+                    <tbody id="tbl-advance" class="divide-y divide-slate-100 text-base"></tbody>
+                </table></div></div>
+            </div>
+
+            <div id="view-personnel" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                <div class="flex justify-between items-center"><h2 class="text-3xl font-extrabold text-slate-800">ข้อมูลบุคลากรในระบบ</h2><button id="btn-add-personnel" onclick="openForm('personnel')" class="bg-primary text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 hidden"><i data-lucide="user-plus"></i> เพิ่มบุคลากร</button></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="card-personnel"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="form-modal" class="fixed inset-0 bg-slate-950/70 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-100">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100"><h2 id="modal-title" class="text-2xl font-extrabold text-slate-800">Title</h2><button type="button" onclick="closeForm()" class="text-slate-400 hover:text-rose-600 bg-slate-100 rounded-full p-2"><i data-lucide="x"></i></button></div>
+            <form id="generic-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                <div id="form-fields" class="space-y-4"></div>
+                <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                    <button type="button" onclick="closeForm()" class="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition">ยกเลิก</button>
+                    <button type="submit" class="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-rose-950 transition">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIGURATION =================
+        const SUPABASE_URL = 'https://nukauapszpzlofinoqyk.supabase.co'; // <-- ใส่ URL
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51a2F1YXBzenB6bG9maW5vcXlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NDMwMjMsImV4cCI6MjA5ODAxOTAyM30.g0KkmSXlz7gCMc0UNwNzd_qztmfLtGFJ04GNYS76U4U'; // <-- ใส่ KEY
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let currentData = { users: [], plans: [], txs: [], advances: [] };
+        let charts = {};
+        let choicesInstances = []; 
+        let activeAdvanceData = null; 
+
+        // สิทธิ์การเข้าถึงเมนูส่วนตัว
+        const navConfig = {
+            'Admin': ['public_home', 'budget_plans', 'income', 'expense', 'advance', 'personnel'],
+            'Finance': ['public_home', 'budget_plans', 'income', 'expense', 'advance'], 
+            'Accounting': ['public_home', 'budget_plans', 'income', 'expense', 'advance'], 
+            'Management': ['public_home']
+        };
+
+        const navLabels = {
+            'public_home': { icon: 'layout-dashboard', label: 'หน้าแดชบอร์ดผู้บริหาร' },
+            'budget_plans': { icon: 'list-tree', label: 'ผังโครงสร้างงบประมาณ' },
+            'income': { icon: 'arrow-down-circle', label: 'บันทึกรับจริง' },
+            'expense': { icon: 'arrow-up-circle', label: 'บันทึกเบิกจ่ายจริง' },
+            'advance': { icon: 'wallet', label: 'สัญญายืมเงิน' },
+            'personnel': { icon: 'users', label: 'ข้อมูลบุคลากร' }
+        };
+
+        lucide.createIcons();
+        const showLoader = () => document.getElementById('loader').style.display = 'flex';
+        const hideLoader = () => document.getElementById('loader').style.display = 'none';
+        const showToast = (msg, type='success') => {
+            const c = document.getElementById('toast-container'); const el = document.createElement('div'); el.className = `toast show ${type}`; el.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-5 h-5 shrink-0"></i><span>${msg}</span>`; c.appendChild(el); lucide.createIcons();
+            setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3500);
+        };
+        const formatMoney = (n) => Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formatThaiDate = (iso) => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()+543}`; };
+
+        // ================= INIT =================
+        async function loadPublicData() {
+            showLoader();
+            const [rPlans, rTx] = await Promise.all([
+                supabaseClient.from('budget_plans').select('*').order('seq'),
+                supabaseClient.from('transactions').select(`*`).order('tx_date')
+            ]);
+            currentData.plans = rPlans.data || []; currentData.txs = rTx.data || [];
+            renderDashboard(); renderReport();
+            hideLoader();
+        }
+        window.onload = loadPublicData;
+
+        // ================= AUTH =================
+        function showLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function hideLogin() { document.getElementById('login-modal').classList.add('hidden'); }
+        async function handleLogin(e) {
+            e.preventDefault(); showLoader();
+            const { data } = await supabaseClient.from('users').select('*').eq('username', document.getElementById('username').value).eq('password', document.getElementById('password').value).single();
+            hideLoader();
+            if(data) { 
+                currentUser = data; hideLogin(); 
+                document.getElementById('btn-show-login').classList.add('hidden');
+                const prof = document.getElementById('user-profile'); prof.classList.remove('hidden'); prof.classList.add('flex');
+                if(currentUser.role !== 'Management') { const sb = document.getElementById('admin-sidebar'); sb.classList.remove('hidden'); sb.classList.add('flex'); }
+                setupNavigation(); loadPrivateData(); showToast('ยินดีต้อนรับ ' + currentUser.name); 
+            } else { showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
+        }
+        function confirmLogout() {
+            if(confirm('ยืนยันออกจากระบบจัดการ?')) { 
+                currentUser = null; document.getElementById('username').value = ''; document.getElementById('password').value = ''; 
+                document.getElementById('btn-show-login').classList.remove('hidden');
+                document.getElementById('user-profile').classList.add('hidden'); document.getElementById('user-profile').classList.remove('flex');
+                document.getElementById('admin-sidebar').classList.add('hidden'); document.getElementById('admin-sidebar').classList.remove('flex');
+                switchView('public_home'); showToast('ออกจากระบบเรียบร้อย'); 
+            }
+        }
+
+        // ================= NAVIGATION =================
+        function setupNavigation() {
+            document.getElementById('user-name').innerText = currentUser.name; document.getElementById('user-role').innerText = currentUser.position;
+            const allowed = navConfig[currentUser.role] || [];
+            const dNav = document.getElementById('desktop-nav'); dNav.innerHTML = '';
+            allowed.forEach(k => { dNav.innerHTML += `<button onclick="switchView('${k}')" class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-100 hover:text-primary transition font-bold text-base nav-btn" data-target="${k}"><i data-lucide="${navLabels[k].icon}" class="w-5 h-5 text-slate-400"></i> ${navLabels[k].label}</button>`; });
+            lucide.createIcons(); switchView(allowed[0]);
+            document.getElementById('btn-add-personnel').classList.toggle('hidden', currentUser.role !== 'Admin');
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(el => { el.dataset.target === viewId ? el.classList.add('bg-rose-50', 'text-primary') : el.classList.remove('bg-rose-50', 'text-primary'); });
+            if(viewId === 'public_home') { renderDashboard(); renderReport(); }
+        }
+
+        async function loadPrivateData() {
+            showLoader();
+            const [rUsers, rAdv, rTxPlans] = await Promise.all([
+                supabaseClient.from('users').select('*').order('name'),
+                supabaseClient.from('cash_advances').select(`*, users(name)`).order('created_at'),
+                supabaseClient.from('transactions').select(`*, budget_plans(name, plan_group)`).order('tx_date') 
+            ]);
+            currentData.users = rUsers.data || []; currentData.advances = rAdv.data || []; currentData.txs = rTxPlans.data || currentData.txs; 
+            renderPersonnel(); renderPlans(); renderTx('income'); renderTx('expense'); renderAdvances();
+            hideLoader();
+        }
+
+        // ================= RENDERING =================
+        function renderDashboard() {
+            const incEst = currentData.plans.filter(p=>p.type==='income').reduce((s,p)=>s+Number(p.estimated_amount),0);
+            const expEst = currentData.plans.filter(p=>p.type==='expense').reduce((s,p)=>s+Number(p.estimated_amount),0);
+            const incAct = currentData.txs.filter(t=>t.type==='income' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
+            const expAct = currentData.txs.filter(t=>t.type==='expense' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
+            
+            const incDiff = Math.max(0, incEst - incAct);
+            const expDiff = Math.max(0, expEst - expAct);
+
+            document.getElementById('exec-inc-est').innerText = '฿' + formatMoney(incEst);
+            document.getElementById('exec-inc-act').innerText = '฿' + formatMoney(incAct);
+            document.getElementById('exec-inc-diff').innerText = '฿' + formatMoney(incDiff);
+            document.getElementById('exec-inc-bar').style.width = `${incEst > 0 ? (incAct/incEst)*100 : 0}%`;
+
+            document.getElementById('exec-exp-est').innerText = '฿' + formatMoney(expEst);
+            document.getElementById('exec-exp-act').innerText = '฿' + formatMoney(expAct);
+            document.getElementById('exec-exp-diff').innerText = '฿' + formatMoney(expDiff);
+            document.getElementById('exec-exp-bar').style.width = `${expEst > 0 ? (expAct/expEst)*100 : 0}%`;
+
+            if(charts.inc) charts.inc.destroy(); if(charts.exp) charts.exp.destroy();
+            Chart.defaults.font.family = 'Sarabun'; Chart.defaults.font.size = 14;
+            charts.inc = new Chart(document.getElementById('chartIncome').getContext('2d'), { type: 'doughnut', data: { labels: ['รับจริงแล้ว', 'ค้างรับตามเป้า'], datasets: [{ data: [incAct, incDiff], backgroundColor: ['#059669', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } } });
+            charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { type: 'doughnut', data: { labels: ['จ่ายจริงแล้ว', 'งบเหลือเบิก'], datasets: [{ data: [expAct, expDiff], backgroundColor: ['#9F1239', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } } });
+        }
+
+        function renderReport() {
+            const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
+            const search = document.getElementById('pub-search').value.toLowerCase();
+            const selMonth = document.getElementById('pub-month').value;
+
+            ['income', 'expense'].forEach(type => {
+                const tName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
+                const tColorHex = type === 'income' ? 'text-emerald-700' : 'text-rose-800';
+                const bgHeader = type === 'income' ? 'bg-emerald-50 text-emerald-950' : 'bg-rose-50 text-rose-950';
+                let grandEst = 0, grandAct = 0;
+
+                const plans = currentData.plans.filter(p => p.type === type && p.name.toLowerCase().includes(search));
+                const groups = [...new Set(plans.map(p => p.plan_group))];
+
+                groups.forEach(gName => {
+                    tbl.innerHTML += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-4 text-lg">${gName}</td></tr>`;
+                    let gEst = 0, gAct = 0;
+                    const gPlans = plans.filter(p => p.plan_group === gName);
+                    const subs = [...new Set(gPlans.map(p => p.sub_category))];
+                    
+                    subs.forEach(sName => {
+                        if(sName && sName !== '-') tbl.innerHTML += `<tr><td colspan="5" class="p-3 pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline">${sName}</td></tr>`;
+                        gPlans.filter(p => p.sub_category === sName).forEach(p => {
+                            const txs = currentData.txs.filter(t => {
+                                if(t.plan_id !== p.id || t.status !== 'approved') return false;
+                                if(selMonth === 'all') return true;
+                                return new Date(t.tx_date) <= new Date(selMonth.split('-')[0], selMonth.split('-')[1], 0); 
+                            });
+                            
+                            const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
+                            const est = Number(p.estimated_amount);
+                            gEst += est; gAct += actual;
+                            tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition"><td class="p-4 pl-12 text-slate-500 font-medium">${p.code||''}</td><td class="p-4 font-medium text-slate-700">${p.name}</td><td class="p-4 text-right">${est>0?formatMoney(est):'-'}</td><td class="p-4 text-right font-extrabold ${tColorHex}">${actual>0?formatMoney(actual):'-'}</td><td class="p-4 pr-6 text-right font-medium">${formatMoney(est-actual)}</td></tr>`;
+                        });
+                    });
+                    tbl.innerHTML += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200"><td colspan="2" class="p-4 text-right">รวม ${gName}</td><td class="p-4 text-right">${formatMoney(gEst)}</td><td class="p-4 text-right ${tColorHex}">${formatMoney(gAct)}</td><td class="p-4 pr-6 text-right">${formatMoney(gEst-gAct)}</td></tr>`;
+                    grandEst += gEst; grandAct += gAct;
+                });
+                tbl.innerHTML += `<tr class="bg-slate-900 text-white font-extrabold text-xl border-b-8 border-white"><td colspan="2" class="p-5 text-right">รวม${tName}ทั้งสิ้น</td><td class="p-5 text-right text-amber-400">${formatMoney(grandEst)}</td><td class="p-5 text-right text-emerald-400">${formatMoney(grandAct)}</td><td class="p-5 pr-6 text-right">${formatMoney(grandEst-grandAct)}</td></tr>`;
+            });
+        }
+
+        // ================= STAFF ADMIN RENDERING =================
+        function renderPersonnel() {
+            const container = document.getElementById('card-personnel'); if(!container) return; container.innerHTML = '';
+            currentData.users.forEach(u => {
+                const btnDelete = currentUser.role === 'Admin' ? `<button type="button" onclick="deleteRow('users','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
+                container.innerHTML += `<div class="card p-6 flex items-center gap-6 relative group"><div class="w-20 h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden">${u.avatar_url ? `<img src="${u.avatar_url}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="text-slate-300 w-10 h-10"></i>`}</div><div class="flex-1"><h3 class="font-bold text-2xl text-slate-800">${u.name}</h3><p class="text-lg text-slate-500 font-medium">${u.position}</p></div><div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition"><button type="button" onclick="editPersonnel('${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-5 h-5"></i></button>${btnDelete}</div></div>`;
+            }); lucide.createIcons();
+        }
+
+        function renderPlans() {
+            const tbl = document.getElementById('tbl-plans'); if(!tbl) return; tbl.innerHTML = '';
+            currentData.plans.forEach(p => {
+                tbl.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-4">${p.seq}</td><td class="p-4"><span class="${p.type==='income'?'text-emerald-700 bg-emerald-100':'text-rose-700 bg-rose-100'} px-3 py-1.5 rounded-lg text-sm font-bold">${p.type==='income'?'รายได้':'รายจ่าย'}</span></td><td class="p-4 font-medium text-slate-600 truncate max-w-[150px]">${p.plan_group}</td><td class="p-4 text-slate-500 truncate max-w-[150px]">${p.sub_category||'-'}</td><td class="p-4 font-bold text-slate-500">${p.code||'-'}</td><td class="p-4 font-bold text-slate-800 truncate max-w-[200px]">${p.name}</td><td class="p-4 text-right font-medium">${formatMoney(p.estimated_amount)}</td><td class="p-4 text-center"><button onclick="editPlan('${p.id}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 font-bold mr-2">แก้ไข</button><button onclick="deleteRow('budget_plans','${p.id}')" class="text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 font-bold">ลบ</button></td></tr>`;
+            });
+        }
+
+        function renderTx(type) {
+            const pref = type === 'income' ? 'inc' : 'exp';
+            const fDate = document.getElementById(`filter-${pref}-date`)?.value;
+            const fMonth = document.getElementById(`filter-${pref}-month`)?.value;
+            const fText = document.getElementById(`filter-${pref}-text`)?.value.toLowerCase();
+
+            const tbl = document.getElementById(`tbl-${type}`); if(!tbl) return; tbl.innerHTML = '';
+            
+            const list = currentData.txs.filter(t => {
+                if(t.type !== type) return false;
+                if(fDate && t.tx_date !== fDate) return false;
+                if(fMonth && !t.tx_date.startsWith(fMonth)) return false;
+                if(fText && !t.budget_plans?.name?.toLowerCase().includes(fText) && !t.note?.toLowerCase().includes(fText)) return false;
+                return true;
+            });
+
+            list.forEach(t => {
+                const btnApprove = (currentUser.role === 'Admin' || currentUser.role === 'Accounting') && t.status === 'pending' ? `<button onclick="updateStatus('transactions','${t.id}','approved')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2">อนุมัติ</button>` : '';
+                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-bold whitespace-nowrap">${formatThaiDate(t.tx_date)}</td><td class="p-4 font-bold text-slate-800">${t.budget_plans?.name || '-'}</td><td class="p-4 text-right font-extrabold text-xl ${type==='income'?'text-emerald-700':'text-rose-700'}">${formatMoney(t.amount)}</td><td class="p-4 text-slate-500">${t.note||'-'}</td><td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-extrabold ${t.status==='approved'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">${t.status==='approved'?'อนุมัติแล้ว':'รออนุมัติ'}</span></td><td class="p-4 text-center">${btnApprove}<button onclick="editTx('${t.id}')" class="text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl font-bold mr-2">แก้ไข</button><button onclick="deleteRow('transactions','${t.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
+            });
+        }
+
+        function renderAdvances() {
+            const fText = document.getElementById('filter-adv-text')?.value.toLowerCase();
+            const tbl = document.getElementById('tbl-advance'); if(!tbl) return; tbl.innerHTML = '';
+            
+            currentData.advances.filter(a => {
+                if(!fText) return true;
+                return a.contract_no?.toLowerCase().includes(fText) || a.activity_name?.toLowerCase().includes(fText) || a.users?.name?.toLowerCase().includes(fText);
+            }).forEach(a => {
+                const bal = Number(a.total_amount) - Number(a.cleared_amount);
+                const btnClear = bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2">เคลียร์สัญญา</button>` : '';
+                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-bold whitespace-nowrap">${formatThaiDate(a.created_at)}</td><td class="p-4 font-extrabold text-slate-800 text-lg">${a.contract_no}</td><td class="p-4 font-bold text-slate-600">${a.users?.name}</td><td class="p-4 text-slate-500 max-w-xs truncate">${a.activity_name}</td><td class="p-4 text-right font-bold text-rose-700 text-lg">${formatMoney(a.total_amount)}</td><td class="p-4 text-right font-bold text-emerald-700 text-lg">${formatMoney(a.cleared_amount)}<br><span class="text-xs font-semibold text-slate-400">ค้างเคลียร์ ${formatMoney(bal)}</span></td><td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-extrabold ${bal<=0||a.status==='cleared'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">${bal<=0||a.status==='cleared'?'เคลียร์หมด':'รอเคลียร์'}</span></td><td class="p-4 text-center">${btnClear}<button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
+            });
+        }
+
+        // ================= DYNAMIC FORMS LOGIC =================
+        function closeForm() { 
+            document.getElementById('form-modal').classList.add('hidden'); 
+            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = []; }
+        }
+
+        function addDynamicRow(mode, rowData = null) {
+            const container = document.getElementById('dynamic-rows-container');
+            const row = document.createElement('div');
+            row.className = 'dynamic-row flex flex-col md:flex-row gap-4 items-end border border-slate-200 p-4 rounded-2xl bg-white shadow-sm mb-3 relative';
+            
+            let opts = currentData.plans.filter(p => p.type === (mode==='advance_clear'?'expense':mode)).map(p => `<option value="${p.id}" ${rowData?.plan_id===p.id?'selected':''}>[${p.plan_group}] ${p.name}</option>`).join('');
+
+            if(mode === 'advance_clear') {
+                row.innerHTML = `<div class="flex-1 w-full"><label class="text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full" required><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-xs font-bold text-slate-500 mb-1 block">ยอดใช้ไปจริง (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2.5 rounded-xl font-bold text-lg text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-3 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0"><i data-lucide="trash-2" class="w-6 h-6"></i></button>`;
+            } else {
+                row.innerHTML = `<div class="flex-1 w-full"><label class="text-xs font-bold text-slate-500 mb-1 block">เลือกรายการงบประมาณ</label><select class="row-plan w-full" required><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-36"><label class="text-xs font-bold text-slate-500 mb-1 block">ยอดเงิน (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2.5 rounded-xl font-bold text-base outline-none" value="${rowData?.amount||''}" required></div><div class="flex-1 w-full"><label class="text-xs font-bold text-slate-500 mb-1 block">หมายเหตุเพิ่มเติม</label><input type="text" class="row-note w-full border p-2.5 rounded-xl text-base outline-none" value="${rowData?.note||''}"></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-3 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0"><i data-lucide="trash-2" class="w-6 h-6"></i></button>`;
+            }
+            container.appendChild(row); lucide.createIcons();
+            choicesInstances.push(new Choices(row.querySelector('.row-plan'), { searchEnabled: true, itemSelectText: '', noResultsText: 'ไม่พบข้อมูล' }));
+        }
+
+        function openForm(mode, data = null) {
+            currentFormMode = mode; currentEditId = typeof data === 'string' ? data : (data ? data.id : null);
+            const f = document.getElementById('form-fields'); f.innerHTML = '';
+            document.getElementById('modal-title').innerText = data ? 'จัดการข้อมูล' : 'สร้างรายการใหม่';
+            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = []; }
+
+            if(mode === 'plan') {
+                f.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><label class="font-bold text-sm mb-1 block">ประเภท</label><select id="f_type" class="border p-3 rounded-xl w-full font-bold"><option value="income" ${data?.type==='income'?'selected':''}>รายได้</option><option value="expense" ${data?.type==='expense'?'selected':''}>รายจ่าย</option></select></div><div><label class="font-bold text-sm mb-1 block">รหัส</label><input type="text" id="f_pcode" class="border p-3 rounded-xl w-full" value="${data?.code||''}"></div><div class="col-span-2"><label class="font-bold text-sm mb-1 block">หมวดใหญ่</label><input type="text" id="f_pgroup" class="border p-3 rounded-xl w-full font-bold" value="${data?.plan_group||''}" required></div><div class="col-span-2"><label class="font-bold text-sm mb-1 block">หมวดย่อย</label><input type="text" id="f_psub" class="border p-3 rounded-xl w-full" value="${data?.sub_category||'-'}"></div><div class="col-span-2"><label class="font-bold text-sm mb-1 block">ชื่อรายการ</label><input type="text" id="f_pname" class="border p-3 rounded-xl w-full font-extrabold text-lg" value="${data?.name||''}" required></div><div><label class="font-bold text-sm mb-1 block">งบตั้งต้น</label><input type="number" id="f_pest" class="border p-3 rounded-xl w-full font-bold text-primary" value="${data?.estimated_amount||0}" required></div><div><label class="font-bold text-sm mb-1 block">Seq</label><input type="number" id="f_pseq" class="border p-3 rounded-xl w-full" value="${data?.seq||999}" required></div></div>`;
+            } else if(mode === 'income' || mode === 'expense') {
+                f.innerHTML = `<div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่ทำรายการ</label><input type="date" id="f_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${data?.tx_date||new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div>${!data ? `<button type="button" onclick="addDynamicRow('${mode}')" class="text-base text-blue-700 bg-blue-100 px-5 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-4 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-5 h-5"></i> เพิ่มรายการรับ/จ่ายในบิลนี้</button>` : ''}`;
+                setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
+            } else if(mode === 'advance_create') {
+                document.getElementById('modal-title').innerText = 'สร้างสัญญายืมเงิน';
+                f.innerHTML = `<div class="space-y-4"><div><label class="font-bold text-sm mb-1 block">วันที่ยืม</label><input type="date" id="f_adv_date" class="border p-3 rounded-xl font-bold w-full md:w-1/2" value="${new Date().toISOString().split('T')[0]}" required></div><div><label class="font-bold text-sm mb-1 block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="border p-3 rounded-xl font-extrabold text-lg w-full" required></div><div><label class="font-bold text-sm mb-1 block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="border p-3 rounded-xl w-full" required></div><div><label class="font-bold text-sm mb-1 block text-rose-700">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="border-2 border-rose-300 bg-rose-50 p-4 rounded-xl font-black text-2xl text-rose-700 w-full md:w-1/2 outline-none" required></div></div>`;
+            } else if(mode === 'advance_clear') {
+                activeAdvanceData = currentData.advances.find(x => x.id === currentEditId);
+                document.getElementById('modal-title').innerText = 'บันทึกเคลียร์สัญญา : ' + activeAdvanceData.contract_no;
+                f.innerHTML = `<div class="bg-slate-900 text-white p-5 rounded-2xl mb-6 flex justify-between items-center"><div><p class="text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-lg">${activeAdvanceData.users?.name} (${activeAdvanceData.activity_name})</p></div><div class="text-right"><p class="text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-base text-blue-700 bg-blue-100 px-5 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-4 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-5 h-5"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">เงินสดทอนคืน (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
+                setTimeout(() => addDynamicRow('advance_clear'), 50);
+            } else if(mode === 'personnel') {
+                f.innerHTML = `<div class="space-y-4"><div><label class="font-bold text-sm mb-1 block">ชื่อ-สกุล</label><input type="text" id="f_name" class="border p-3 rounded-xl w-full" value="${data?.name||''}" required></div><div><label class="font-bold text-sm mb-1 block">ตำแหน่ง</label><input type="text" id="f_pos" class="border p-3 rounded-xl w-full font-bold" value="${data?.position||''}" required></div><div><label class="font-bold text-sm mb-1 block">รูปโปรไฟล์</label><input type="file" id="f_file" accept="image/*" class="border p-3 rounded-xl w-full bg-slate-50"></div></div>`;
+            }
+            document.getElementById('form-modal').classList.remove('hidden');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault(); showLoader();
+            try {
+                if(currentFormMode === 'plan') {
+                    const py = { type: document.getElementById('f_type').value, plan_group: document.getElementById('f_pgroup').value, sub_category: document.getElementById('f_psub').value, code: document.getElementById('f_pcode').value, name: document.getElementById('f_pname').value, estimated_amount: document.getElementById('f_pest').value, seq: document.getElementById('f_pseq').value };
+                    currentEditId ? await supabaseClient.from('budget_plans').update(py).eq('id', currentEditId) : await supabaseClient.from('budget_plans').insert([py]);
+                } else if(currentFormMode === 'income' || currentFormMode === 'expense') {
+                    const rows = document.querySelectorAll('.dynamic-row');
+                    if(rows.length === 0) { hideLoader(); return showToast('เพิ่มอย่างน้อย 1 รายการ', 'error'); }
+                    const list = []; rows.forEach(r => list.push({ type: currentFormMode, tx_date: document.getElementById('f_date').value, plan_id: r.querySelector('.row-plan').value, amount: r.querySelector('.row-amount').value, note: r.querySelector('.row-note').value, created_by: currentUser.id }));
+                    currentEditId ? await supabaseClient.from('transactions').update(list[0]).eq('id', currentEditId) : await supabaseClient.from('transactions').insert(list);
+                } else if(currentFormMode === 'advance_create') {
+                    await supabaseClient.from('cash_advances').insert([{ user_id: currentUser.id, contract_no: document.getElementById('f_adv_contract').value, activity_name: document.getElementById('f_adv_act').value, total_amount: document.getElementById('f_adv_total').value, created_at: document.getElementById('f_adv_date').value }]);
+                } else if(currentFormMode === 'advance_clear') {
+                    let tExp = 0; const list = []; const cDate = document.getElementById('f_clear_date').value;
+                    document.querySelectorAll('.dynamic-row').forEach(r => { const pId = r.querySelector('.row-plan').value; const amt = Number(r.querySelector('.row-amount').value); if(pId && amt > 0) { tExp += amt; list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${activeAdvanceData.contract_no}`, status: 'approved', created_by: currentUser.id }); } });
+                    const tRet = Number(document.getElementById('f_clear_ret').value);
+                    if((tExp + tRet) <= 0) { hideLoader(); return showToast('ระบุยอดใช้จริง หรือยอดคืน', 'error'); }
+                    const nClear = Number(activeAdvanceData.cleared_amount) + tExp + tRet;
+                    if(list.length > 0) await supabaseClient.from('transactions').insert(list);
+                    await supabaseClient.from('cash_advances').update({ cleared_amount: nClear, status: nClear >= Number(activeAdvanceData.total_amount) ? 'cleared' : 'pending' }).eq('id', activeAdvanceData.id);
+                } else if(currentFormMode === 'personnel') {
+                    const py = { name: document.getElementById('f_name').value, position: document.getElementById('f_pos').value };
+                    const file = document.getElementById('f_file').files[0];
+                    if(file) { const fN = `${Date.now()}_${file.name}`; await supabaseClient.storage.from('img').upload(fN, file); py.avatar_url = supabaseClient.storage.from('img').getPublicUrl(fN).data.publicUrl; }
+                    currentEditId && await supabaseClient.from('users').update(py).eq('id', currentEditId);
+                }
+                showToast('บันทึกเรียบร้อย'); closeForm(); currentUser ? await loadPrivateData() : await loadPublicData();
+            } catch(err) { showToast('ข้อผิดพลาด', 'error'); console.error(err); }
+            hideLoader();
+        }
+
+        function editPlan(id) { openForm('plan', currentData.plans.find(x => x.id === id)); }
+        function editTx(id) { openForm(currentData.txs.find(x => x.id === id).type, currentData.txs.find(x => x.id === id)); }
+        function editPersonnel(id) { openForm('personnel', currentData.users.find(x => x.id === id)); }
+        
+        async function deleteRow(table, id) { 
+            if(confirm('ยืนยันการลบข้อมูลถาวร?')) { 
+                showLoader(); 
+                const { error } = await supabaseClient.from(table).delete().eq('id', id); 
+                if(error) {
+                    showToast('ไม่สามารถลบได้ อาจมีข้อมูลอื่นผูกพันอยู่', 'error');
+                } else {
+                    showToast('ลบข้อมูลเรียบร้อยแล้ว'); 
+                }
+                await loadPrivateData(); 
+                hideLoader(); 
+            } 
+        }
+
+        function resetFilter(t) {
+            document.getElementById(`filter-${t}-date`).value = '';
+            document.getElementById(`filter-${t}-month`).value = '';
+            document.getElementById(`filter-${t}-text`).value = '';
+            renderTx(t === 'inc' ? 'income' : 'expense');
+        }
+
+        async function updateStatus(table, id, status) { showLoader(); await supabaseClient.from(table).update({status}).eq('id', id); showToast('อนุมัติแล้ว'); await loadPrivateData(); hideLoader(); }
+
+        function exportData(table) {
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(currentData.advances.map(a => ({ 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': a.users?.name, 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดเคลียร์': a.cleared_amount }))), "Sheet1"); XLSX.writeFile(wb, `Advances.xlsx`);
+        }
+
+        function exportFilteredTx(type, mode) {
+            const pref = type === 'income' ? 'inc' : 'exp';
+            const val = mode === 'day' ? document.getElementById(`filter-${pref}-date`).value : document.getElementById(`filter-${pref}-month`).value;
+            if(!val) return showToast(`กรุณาเลือก${mode==='day'?'วันที่':'เดือน'}ที่ต้องการออกรายงานก่อน`, 'error');
+
+            const list = currentData.txs.filter(t => t.type === type && (mode==='day' ? t.tx_date === val : t.tx_date.startsWith(val))).map(t => ({ 'วันที่': formatThaiDate(t.tx_date), 'รายการ': t.budget_plans?.name, 'จำนวนเงิน': t.amount, 'หมายเหตุ': t.note, 'สถานะ': t.status==='approved'?'อนุมัติ':'รออนุมัติ' }));
+            
+            if(list.length === 0) return showToast('ไม่พบข้อมูลในเงื่อนไขที่เลือก', 'error');
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(list), "Report"); XLSX.writeFile(wb, `KTU_${type}_${val}.xlsx`);
+        }
+
+        function exportReport() {
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("report-table")), "Report"); XLSX.writeFile(wb, `KTU_Budget_Report.xlsx`);
+        }
+    </script>
+</body>
+</html>
