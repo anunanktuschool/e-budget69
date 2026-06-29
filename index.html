@@ -310,8 +310,18 @@
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">สัญญายืมเงินทดรองจ่าย</h2>
                     <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="flex-1 sm:flex-none bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm">Export</button><button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
                 </div>
-                <div class="card p-4 bg-white border border-slate-200 flex gap-4">
-                    <div class="relative flex-1"><i data-lucide="search" class="absolute left-3.5 top-3 text-slate-400 w-5 h-5"></i><input type="text" id="filter-adv-text" placeholder="ค้นหา สัญญา, โครงการ, ผู้ยืม..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:bg-white focus:border-primary text-sm font-medium" onkeyup="renderAdvances()"></div>
+                <div class="card p-4 bg-white border border-slate-200 flex flex-wrap gap-4 items-end">
+                    <div class="relative flex-1 min-w-[200px]">
+                        <i data-lucide="search" class="absolute left-3.5 top-3 text-slate-400 w-5 h-5"></i>
+                        <input type="text" id="filter-adv-text" placeholder="ค้นหา สัญญา, โครงการ, ผู้ยืม..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:bg-white focus:border-primary text-sm font-medium" onkeyup="renderAdvances()">
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <select id="filter-adv-status" class="border p-2.5 bg-slate-50 rounded-xl text-sm font-bold w-full outline-none" onchange="renderAdvances()">
+                            <option value="all">สถานะทั้งหมด</option>
+                            <option value="pending">รอเคลียร์</option>
+                            <option value="cleared">เคลียร์แล้ว</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="card overflow-hidden">
                     <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
@@ -372,6 +382,8 @@
         let charts = {};
         let choicesInstances = []; 
         let activeAdvanceData = null; 
+        let currentFormMode = '';
+        let currentEditId = null;
 
         // เปิดให้ Admin, Finance, Accounting เข้าถึง personnel ได้
         const navConfig = {
@@ -595,7 +607,8 @@
                             const txs = currentData.txs.filter(t => {
                                 if(t.plan_id !== p.id || t.status !== 'approved') return false;
                                 if(selMonth === 'all') return true;
-                                return new Date(t.tx_date) <= new Date(selMonth.split('-')[0], selMonth.split('-')[1], 0); 
+                                // แก้บัคข้ามคืน: เช็คด้วย String YYYY-MM แทน Date object เพื่อป้องกันเวลาข้ามวันหรือลืมคิดวันที่ 31
+                                return t.tx_date.substring(0, 7) <= selMonth; 
                             });
                             
                             const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
@@ -711,65 +724,56 @@
             });
         }
 
-      // --- ก๊อปปี้ฟังก์ชันนี้ไปวางทับ function renderAdvances() เดิมในไฟล์ของคุณ ---
-function renderAdvances() {
-    const tbl = document.getElementById('tbl-advance');
-    if (!tbl) return;
-    tbl.innerHTML = '';
-    
-    // ดึงค่าจากฟิลเตอร์
-    const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
-    const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
+        // ================= แก้ไขฟังก์ชันแสดงข้อมูลสัญญายืมเงิน =================
+        function renderAdvances() {
+            const tbl = document.getElementById('tbl-advance');
+            if (!tbl) return;
+            tbl.innerHTML = '';
+            
+            const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
+            const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
 
-    // กรองและเรียงลำดับ
-    let filteredData = currentData.advances.filter(a => {
-        const p = currentData.personnel.find(x => x.id === a.user_id);
-        const name = p ? p.name.toLowerCase() : "";
-        const matchText = name.includes(fText) || (a.contract_no || "").toLowerCase().includes(fText) || (a.activity_name || "").toLowerCase().includes(fText);
-        
-        const bal = Number(a.total_amount) - Number(a.cleared_amount);
-        const statusMatch = (fStatus === 'all') || (fStatus === 'cleared' && bal <= 0) || (fStatus === 'pending' && bal > 0);
-        return matchText && statusMatch;
-    });
+            let filteredData = currentData.advances.filter(a => {
+                const p = currentData.personnel.find(x => x.id === a.user_id);
+                const name = a.personnel?.name || (p ? p.name : "");
+                
+                const contract = (a.contract_no || "").toLowerCase();
+                const activity = (a.activity_name || "").toLowerCase();
+                const matchText = name.toLowerCase().includes(fText) || contract.includes(fText) || activity.includes(fText);
+                
+                const bal = Number(a.total_amount) - Number(a.cleared_amount);
+                const statusMatch = (fStatus === 'all') || (fStatus === 'cleared' && bal <= 0) || (fStatus === 'pending' && bal > 0);
+                
+                return matchText && statusMatch;
+            });
 
-    filteredData.sort((a, b) => (a.contract_no || "").localeCompare(b.contract_no || ""));
+            // เรียงลำดับจากเลขสัญญาน้อยไปมาก
+            filteredData.sort((a, b) => (a.contract_no || "").localeCompare(b.contract_no || "", undefined, {numeric: true}));
 
-    // แสดงผล
-    filteredData.forEach(a => {
-        const p = currentData.personnel.find(x => x.id === a.user_id);
-        const name = p ? p.name : "ไม่พบชื่อ";
-        const bal = Number(a.total_amount) - Number(a.cleared_amount);
-        
-        tbl.innerHTML += `<tr class="border-b hover:bg-gray-50">
-            <td class="p-4">${formatThaiDate(a.created_at)}</td>
-            <td class="p-4 font-bold text-primary">${a.contract_no || ''}</td>
-            <td class="p-4">${name}</td>
-            <td class="p-4">${a.activity_name || ''}</td>
-            <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
-            <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
-            <td class="p-4 font-bold ${bal <= 0 ? 'text-green-600' : 'text-orange-600'}">${bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์'}</td>
-            <td class="p-4 text-center">
-                <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="bg-blue-600 text-white px-4 py-2 rounded">แก้ไข</button>
-            </td>
-        </tr>`;
-    });
-}
-function exportData() {
-    const dataToExport = currentData.advances.map(a => {
-        const p = currentData.personnel.find(x => x.id === a.user_id);
-        return { 
-            'วันที่': formatThaiDate(a.created_at), 
-            'เลขที่สัญญา': a.contract_no, 
-            'ผู้ยืม': p ? p.name : 'ไม่ระบุ', 
-            'กิจกรรม': a.activity_name, 
-            'ยอดยืม': a.total_amount, 
-            'ยอดเคลียร์': a.cleared_amount 
-        };
-    });
-    const wb = XLSX.utils.book_new(); 
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataToExport), "Advances"); 
-    XLSX.writeFile(wb, `Contract_Report.xlsx`);
-}
+            filteredData.forEach(a => {
+                const p = currentData.personnel.find(x => x.id === a.user_id);
+                const name = a.personnel?.name || (p ? p.name : "ไม่พบชื่อ");
+                const bal = Number(a.total_amount) - Number(a.cleared_amount);
+                
+                tbl.innerHTML += `<tr class="border-b hover:bg-slate-50 transition text-sm md:text-base">
+                    <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
+                    <td class="p-3 md:p-4 font-bold text-primary whitespace-nowrap">${a.contract_no || ''}</td>
+                    <td class="p-3 md:p-4 whitespace-nowrap">${name}</td>
+                    <td class="p-3 md:p-4 whitespace-normal max-w-[200px]">${a.activity_name || ''}</td>
+                    <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.total_amount)}</td>
+                    <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.cleared_amount)}</td>
+                    <td class="p-3 md:p-4 whitespace-nowrap text-center">
+                        <span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${bal <= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                            ${bal <= 0 ? 'เคลียร์แล้ว' : 'รอเคลียร์'}
+                        </span>
+                    </td>
+                    <td class="p-3 md:p-4 text-center whitespace-nowrap">
+                        <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl font-bold mr-1">แก้ไข</button>
+                        <button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button>
+                    </td>
+                </tr>`;
+            });
+        }
 
         // ================= DYNAMIC FORMS LOGIC =================
         function closeForm() { 
@@ -805,14 +809,14 @@ function exportData() {
                 f.innerHTML = `<div class="mb-4 mt-6"><label class="font-bold text-sm mb-1 block">วันที่ทำรายการ</label><input type="date" id="f_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${data?.tx_date||new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div>${!data ? `<button type="button" onclick="addDynamicRow('${mode}')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มรายการรับ/จ่ายในบิลนี้</button>` : ''}`;
                 setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
             } else if(mode === 'advance_create') {
-                document.getElementById('modal-title').innerText = 'สร้างสัญญายืมเงิน';
-                let userOpts = currentData.personnel.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+                document.getElementById('modal-title').innerText = currentEditId ? 'แก้ไขสัญญายืมเงิน' : 'สร้างสัญญายืมเงิน';
+                let userOpts = currentData.personnel.map(u => `<option value="${u.id}" ${data && data.user_id === u.id ? 'selected' : ''}>${u.name}</option>`).join('');
                 f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
-                    <div><label class="font-bold text-sm mb-1 block">วันที่ยืม</label><input type="date" id="f_adv_date" class="border p-3 rounded-xl font-bold w-full md:w-1/2" value="${new Date().toISOString().split('T')[0]}" required></div>
+                    <div><label class="font-bold text-sm mb-1 block">วันที่ยืม</label><input type="date" id="f_adv_date" class="border p-3 rounded-xl font-bold w-full md:w-1/2" value="${data?.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]}" required></div>
                     <div><label class="font-bold text-sm mb-1 block">ชื่อผู้ยืม</label><select id="f_adv_user" class="border p-3 rounded-xl w-full text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div>
-                    <div><label class="font-bold text-sm mb-1 block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="border p-3 rounded-xl font-extrabold text-base md:text-lg w-full" required></div>
-                    <div><label class="font-bold text-sm mb-1 block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="border p-3 rounded-xl w-full" required></div>
-                    <div><label class="font-bold text-sm mb-1 block text-rose-700">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="border-2 border-rose-300 bg-rose-50 p-4 rounded-xl font-black text-xl md:text-2xl text-rose-700 w-full md:w-1/2 outline-none" required></div>
+                    <div><label class="font-bold text-sm mb-1 block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="border p-3 rounded-xl font-extrabold text-base md:text-lg w-full" value="${data?.contract_no||''}" required></div>
+                    <div><label class="font-bold text-sm mb-1 block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="border p-3 rounded-xl w-full" value="${data?.activity_name||''}" required></div>
+                    <div><label class="font-bold text-sm mb-1 block text-rose-700">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="border-2 border-rose-300 bg-rose-50 p-4 rounded-xl font-black text-xl md:text-2xl text-rose-700 w-full md:w-1/2 outline-none" value="${data?.total_amount||''}" required></div>
                 </div>`;
                 setTimeout(() => {
                     choicesInstances.push(new Choices(document.getElementById('f_adv_user'), { searchEnabled: true, itemSelectText: '', noResultsText: 'ไม่พบข้อมูลผู้ยืม' }));
@@ -896,17 +900,28 @@ function exportData() {
                         hideLoader();
                         return showToast('กรุณาเลือกผู้ยืม', 'error');
                     }
-
-                    const { error } = await supabaseClient.from('cash_advances').insert([{ 
+                    
+                    const py = { 
                         user_id: userId, 
                         contract_no: document.getElementById('f_adv_contract').value, 
                         activity_name: document.getElementById('f_adv_act').value, 
                         total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, 
-                        cleared_amount: 0,
-                        status: 'pending',
                         created_at: document.getElementById('f_adv_date').value 
-                    }]);
-                    if(error) throw error;
+                    };
+
+                    let dbError = null;
+                    if(currentEditId) {
+                        // อัพเดทข้อมูล
+                        const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId);
+                        dbError = error;
+                    } else {
+                        // สร้างใหม่
+                        py.cleared_amount = 0;
+                        py.status = 'pending';
+                        const { error } = await supabaseClient.from('cash_advances').insert([py]);
+                        dbError = error;
+                    }
+                    if(dbError) throw dbError;
 
                 } else if(currentFormMode === 'advance_clear') {
                     let tExp = 0; 
