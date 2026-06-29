@@ -714,18 +714,63 @@
             });
         }
 
-        function renderAdvances() {
+ function renderAdvances() {
             const fText = document.getElementById('filter-adv-text')?.value.toLowerCase();
             const tbl = document.getElementById('tbl-advance'); if(!tbl) return; tbl.innerHTML = '';
             
             currentData.advances.filter(a => {
                 if(!fText) return true;
-                return a.contract_no?.toLowerCase().includes(fText) || a.activity_name?.toLowerCase().includes(fText) || a.users?.name?.toLowerCase().includes(fText);
+                // เปลี่ยนจุดค้นหาให้มองหาชื่อจาก personnel
+                return a.contract_no?.toLowerCase().includes(fText) || a.activity_name?.toLowerCase().includes(fText) || a.personnel?.name?.toLowerCase().includes(fText);
             }).forEach(a => {
                 const bal = Number(a.total_amount) - Number(a.cleared_amount);
                 const btnClear = bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2 mb-1 md:mb-0">เคลียร์สัญญา</button>` : '';
-                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(a.created_at)}</td><td class="p-3 md:p-4 font-extrabold text-slate-800 text-base md:text-lg whitespace-nowrap">${a.contract_no}</td><td class="p-3 md:p-4 font-bold text-slate-600 whitespace-nowrap">${a.users?.name}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[200px] md:max-w-xs">${a.activity_name}</td><td class="p-3 md:p-4 text-right font-bold text-rose-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.total_amount)}</td><td class="p-3 md:p-4 text-right font-bold text-emerald-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.cleared_amount)}<br><span class="text-[10px] md:text-xs font-semibold text-slate-400">ค้างเคลียร์ ${formatMoney(bal)}</span></td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${bal<=0||a.status==='cleared'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${bal<=0||a.status==='cleared'?'เคลียร์หมด':'รอเคลียร์'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnClear}<button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
+                // เปลี่ยน a.users?.name เป็น a.personnel?.name
+                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(a.created_at)}</td><td class="p-3 md:p-4 font-extrabold text-slate-800 text-base md:text-lg whitespace-nowrap">${a.contract_no}</td><td class="p-3 md:p-4 font-bold text-slate-600 whitespace-nowrap">${a.personnel?.name}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[200px] md:max-w-xs">${a.activity_name}</td><td class="p-3 md:p-4 text-right font-bold text-rose-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.total_amount)}</td><td class="p-3 md:p-4 text-right font-bold text-emerald-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.cleared_amount)}<br><span class="text-[10px] md:text-xs font-semibold text-slate-400">ค้างเคลียร์ ${formatMoney(bal)}</span></td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${bal<=0||a.status==='cleared'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${bal<=0||a.status==='cleared'?'เคลียร์หมด':'รอเคลียร์'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnClear}<button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
             });
+        }
+
+        function openForm(mode, data = null) {
+            currentFormMode = mode; currentEditId = typeof data === 'string' ? data : (data ? data.id : null);
+            const f = document.getElementById('form-fields'); f.innerHTML = '';
+            document.getElementById('modal-title').innerText = data ? 'จัดการข้อมูล' : 'สร้างรายการใหม่';
+            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = []; }
+
+            if(mode === 'plan') {
+                f.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-4"><div><label class="font-bold text-sm mb-1 block">ประเภท</label><select id="f_type" class="border p-3 rounded-xl w-full font-bold"><option value="income" ${data?.type==='income'?'selected':''}>รายได้</option><option value="expense" ${data?.type==='expense'?'selected':''}>รายจ่าย</option></select></div><div><label class="font-bold text-sm mb-1 block">รหัส</label><input type="text" id="f_pcode" class="border p-3 rounded-xl w-full" value="${data?.code||''}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดใหญ่</label><input type="text" id="f_pgroup" class="border p-3 rounded-xl w-full font-bold" value="${data?.plan_group||''}" required></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดย่อย</label><input type="text" id="f_psub" class="border p-3 rounded-xl w-full" value="${data?.sub_category||'-'}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">ชื่อรายการ</label><input type="text" id="f_pname" class="border p-3 rounded-xl w-full font-extrabold text-base md:text-lg" value="${data?.name||''}" required></div><div><label class="font-bold text-sm mb-1 block">งบตั้งต้น</label><input type="number" id="f_pest" class="border p-3 rounded-xl w-full font-bold text-primary" value="${data?.estimated_amount||0}" required></div><div><label class="font-bold text-sm mb-1 block">Seq (ลำดับการแสดงผล)</label><input type="number" id="f_pseq" class="border p-3 rounded-xl w-full" value="${data?.seq||999}" required></div></div>`;
+            } else if(mode === 'income' || mode === 'expense') {
+                f.innerHTML = `<div class="mb-4 mt-6"><label class="font-bold text-sm mb-1 block">วันที่ทำรายการ</label><input type="date" id="f_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${data?.tx_date||new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div>${!data ? `<button type="button" onclick="addDynamicRow('${mode}')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มรายการรับ/จ่ายในบิลนี้</button>` : ''}`;
+                setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
+            } else if(mode === 'advance_create') {
+                document.getElementById('modal-title').innerText = 'สร้างสัญญายืมเงิน';
+                let userOpts = currentData.personnel.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+                f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
+                    <div><label class="font-bold text-sm mb-1 block">วันที่ยืม</label><input type="date" id="f_adv_date" class="border p-3 rounded-xl font-bold w-full md:w-1/2" value="${new Date().toISOString().split('T')[0]}" required></div>
+                    <div><label class="font-bold text-sm mb-1 block">ชื่อผู้ยืม</label><select id="f_adv_user" class="border p-3 rounded-xl w-full text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div>
+                    <div><label class="font-bold text-sm mb-1 block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="border p-3 rounded-xl font-extrabold text-base md:text-lg w-full" required></div>
+                    <div><label class="font-bold text-sm mb-1 block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="border p-3 rounded-xl w-full" required></div>
+                    <div><label class="font-bold text-sm mb-1 block text-rose-700">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="border-2 border-rose-300 bg-rose-50 p-4 rounded-xl font-black text-xl md:text-2xl text-rose-700 w-full md:w-1/2 outline-none" required></div>
+                </div>`;
+                setTimeout(() => {
+                    choicesInstances.push(new Choices(document.getElementById('f_adv_user'), { searchEnabled: true, itemSelectText: '', noResultsText: 'ไม่พบข้อมูลผู้ยืม' }));
+                }, 50);
+            } else if(mode === 'advance_clear') {
+                activeAdvanceData = currentData.advances.find(x => x.id === currentEditId);
+                document.getElementById('modal-title').innerText = 'บันทึกเคลียร์สัญญา : ' + activeAdvanceData.contract_no;
+                // เปลี่ยนชื่อเวลาเคลียร์สัญญาให้ดึงจาก personnel
+                f.innerHTML = `<div class="bg-slate-900 text-white p-4 md:p-5 rounded-2xl mb-6 mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-base md:text-lg">${activeAdvanceData.personnel?.name} (${activeAdvanceData.activity_name})</p></div><div class="text-left md:text-right"><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-xl md:text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">เงินสดทอนคืน (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
+                setTimeout(() => addDynamicRow('advance_clear'), 50);
+            } else if(mode === 'personnel') {
+                f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
+                    <div><label class="font-bold text-sm mb-1 block">ชื่อ-สกุล (ผู้ยืม / บุคลากร)</label><input type="text" id="f_name" class="border p-3 rounded-xl w-full" value="${data?.name||''}" required></div>
+                </div>`;
+            }
+            document.getElementById('form-modal').classList.remove('hidden');
+        }
+
+        function exportData(table) {
+            // เปลี่ยนจุด export ลง Excel ให้ตรงกัน
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(currentData.advances.map(a => ({ 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': a.personnel?.name, 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดเคลียร์': a.cleared_amount }))), "Sheet1"); XLSX.writeFile(wb, `Advances.xlsx`);
         }
 
         // ================= DYNAMIC FORMS LOGIC =================
