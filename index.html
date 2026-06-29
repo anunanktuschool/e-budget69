@@ -558,67 +558,18 @@
             charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { type: 'doughnut', data: { labels: ['จ่ายจริงแล้ว', 'งบเหลือเบิก'], datasets: [{ data: [expAct, expDiff], backgroundColor: ['#9F1239', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } });
         }
 
-       function renderReport() {
-            const tbl = document.getElementById('tbl-report'); 
-            tbl.innerHTML = '';
+        function renderReport() {
+            const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
             const search = document.getElementById('pub-search').value.toLowerCase();
-            const selMonth = document.getElementById('pub-month').value;
-
-            let totalEst = { income: 0, expense: 0 };
-            let totalAct = { income: 0, expense: 0 };
-
-            ['income', 'expense'].forEach(type => {
-                const tName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
-                const tColorHex = type === 'income' ? 'text-emerald-700' : 'text-rose-800';
-                let grandEst = 0, grandAct = 0;
-
-                const plans = currentData.plans.filter(p => p.type === type && p.name.toLowerCase().includes(search));
-                
-                plans.forEach(p => {
-                    // ปรับเงื่อนไขการดึงข้อมูลให้ดึงมาโชว์ทั้งหมดตามที่เลือก
-                    const txs = currentData.txs.filter(t => {
-                        if(t.plan_id !== p.id || t.status !== 'approved') return false;
-                        if(selMonth === 'all') return true;
-                        return t.tx_date.startsWith(selMonth); 
-                    });
-                    
-                    const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
-                    const est = Number(p.estimated_amount);
-                    grandEst += est; grandAct += actual;
-                    
-                    tbl.innerHTML += `<tr class="border-b border-slate-100 transition text-xs md:text-base">
-                        <td class="p-3">${p.code||''}</td>
-                        <td class="p-3">${p.name}</td>
-                        <td class="p-3 text-right">${formatMoney(est)}</td>
-                        <td class="p-3 text-right font-bold ${tColorHex}">${formatMoney(actual)}</td>
-                        <td class="p-3 text-right">${formatMoney(est - actual)}</td>
-                    </tr>`;
-                });
-                totalEst[type] = grandEst;
-                totalAct[type] = grandAct;
-            });
-
-            // ส่วนสรุปที่ทำให้เต็มตาราง 5 คอลัมน์ ไม่กุดแน่นอน
-            tbl.innerHTML += `
-            <tr class="bg-slate-200 font-bold">
-                <td colspan="2" class="p-3 text-right">รวมรายรับ</td>
-                <td class="p-3 text-right"></td>
-                <td class="p-3 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-3 text-right"></td>
-            </tr>
-            <tr class="bg-slate-200 font-bold">
-                <td colspan="2" class="p-3 text-right">รวมรายจ่าย</td>
-                <td class="p-3 text-right"></td>
-                <td class="p-3 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-3 text-right"></td>
-            </tr>
-            <tr class="bg-slate-800 text-white font-bold">
-                <td colspan="2" class="p-4 text-right">คงเหลือสุทธิ</td>
-                <td class="p-4"></td>
-                <td class="p-4"></td>
-                <td class="p-4 text-right">${formatMoney(totalAct.income - totalAct.expense)}</td>
-            </tr>`;
-        }
+            const monthSelect = document.getElementById('pub-month');
+            const selMonth = monthSelect.value;
+            const selMonthTextRaw = monthSelect.options[monthSelect.selectedIndex].text;
+            
+            let monthLabel = "ตลอดปีการศึกษา";
+            if (selMonth !== 'all') {
+                const parts = selMonthTextRaw.split(' ');
+                monthLabel = `เดือน${parts[0]} ${parts[1]}`;
+            }
 
             let totalEst = { income: 0, expense: 0 };
             let totalAct = { income: 0, expense: 0 };
