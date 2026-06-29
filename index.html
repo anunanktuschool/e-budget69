@@ -619,7 +619,7 @@
             // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
                 <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalEst.income)}</td>
+                <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalEst.income)+10}</td>
                 <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
                 <td class="p-3 md:p-4 text-right text-emerald-800"></td>
             </tr>`;
