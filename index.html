@@ -362,7 +362,13 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let currentData = { users: [], plans: [], txs: [], advances: [] };
+        let currentData = {
+            users: [],          // ใช้สำหรับ Login เท่านั้น
+            personnel: [],      // ผู้ยืมเงิน
+            plans: [],
+            txs: [],
+            advances: []
+        };
         let charts = {};
         let choicesInstances = []; 
         let activeAdvanceData = null; 
@@ -501,12 +507,27 @@
 
         async function loadPrivateData() {
             showLoader();
-            const [rUsers, rAdv, rTxPlans] = await Promise.all([
+            const [rUsers, rPersonnel, rAdv, rTxPlans] = await Promise.all([
                 supabaseClient.from('users').select('*').order('name'),
-                supabaseClient.from('cash_advances').select(`*, users(name)`).order('created_at'),
-                supabaseClient.from('transactions').select(`*, budget_plans(name, plan_group)`).order('tx_date') 
+                supabaseClient.from('personnel').select('*').order('name'),
+                supabaseClient
+                    .from('cash_advances')
+                    .select(`
+                        *,
+                        personnel(name)
+                    `)
+                    .order('created_at'),
+
+                supabaseClient
+                    .from('transactions')
+                    .select(`*, budget_plans(name, plan_group)`)
+                    .order('tx_date')
             ]);
-            currentData.users = rUsers.data || []; currentData.advances = rAdv.data || []; currentData.txs = rTxPlans.data || currentData.txs; 
+
+            currentData.users = rUsers.data || [];
+            currentData.personnel = rPersonnel.data || [];
+            currentData.advances = rAdv.data || [];
+            currentData.txs = rTxPlans.data || currentData.txs;
             renderPersonnel(); renderPlans(); renderTx('income'); renderTx('expense'); renderAdvances();
             hideLoader();
         }
@@ -619,13 +640,15 @@
             // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
                 <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
+                <td class="p-3 md:p-4 text-right"></td>
                 <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800"></td>
+                <td class="p-3 md:p-4 text-right"></td>
             </tr>`;
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
                 <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
-                           <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-3 md:p-4 text-right text-rose-800"></td>
+                <td class="p-3 md:p-4 text-right"></td>
+                <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
+                <td class="p-3 md:p-4 text-right"></td>
             </tr>`;
 
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
@@ -634,16 +657,17 @@
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
                 <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                <td class="p-4 md:p-6 text-right"></td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
             </tr>`;
         }
 
         // ================= STAFF ADMIN RENDERING =================
         function renderPersonnel() {
             const container = document.getElementById('card-personnel'); if(!container) return; container.innerHTML = '';
-            currentData.users.forEach(u => {
-                const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('users','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
+            currentData.personnel.forEach(u => {
+                const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('personnel','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
                 container.innerHTML += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group">
                     <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden">
                         <i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i>
@@ -739,7 +763,7 @@
                 setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
             } else if(mode === 'advance_create') {
                 document.getElementById('modal-title').innerText = 'สร้างสัญญายืมเงิน';
-                let userOpts = currentData.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+                let userOpts = currentData.personnel.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
                 f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
                     <div><label class="font-bold text-sm mb-1 block">วันที่ยืม</label><input type="date" id="f_adv_date" class="border p-3 rounded-xl font-bold w-full md:w-1/2" value="${new Date().toISOString().split('T')[0]}" required></div>
                     <div><label class="font-bold text-sm mb-1 block">ชื่อผู้ยืม</label><select id="f_adv_user" class="border p-3 rounded-xl w-full text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div>
@@ -763,7 +787,7 @@
             document.getElementById('form-modal').classList.remove('hidden');
         }
 
-      async function handleFormSubmit(e) {
+        async function handleFormSubmit(e) {
             e.preventDefault(); 
             showLoader();
             try {
@@ -879,16 +903,15 @@
                     if(advErr) throw advErr;
 
                 } else if(currentFormMode === 'personnel') {
-                    // ส่งค่า position เป็น '-' เพื่อป้องการบัคกรณ๊ฐานข้อมูลบังคับห้ามเป็นค่าว่าง
-                    const py = { name: document.getElementById('f_name').value, position: '-' };
+                    // แก้ไข Insert และ Update ให้ยิงไปที่ตาราง personnel แทน users ให้ตรงกับโครงสร้างข้อมูลปัจจุบัน
+                    const py = { name: document.getElementById('f_name').value };
                     let dbError = null;
 
                     if(currentEditId) {
-                        const { error } = await supabaseClient.from('users').update(py).eq('id', currentEditId);
+                        const { error } = await supabaseClient.from('personnel').update(py).eq('id', currentEditId);
                         dbError = error;
                     } else {
-                        // แก้บัคคำสั่ง Insert ที่หายไป
-                        const { error } = await supabaseClient.from('users').insert([py]);
+                        const { error } = await supabaseClient.from('personnel').insert([py]);
                         dbError = error;
                     }
                     if(dbError) throw dbError;
@@ -907,7 +930,7 @@
 
         function editPlan(id) { openForm('plan', currentData.plans.find(x => x.id === id)); }
         function editTx(id) { openForm(currentData.txs.find(x => x.id === id).type, currentData.txs.find(x => x.id === id)); }
-        function editPersonnel(id) { openForm('personnel', currentData.users.find(x => x.id === id)); }
+        function editPersonnel(id) { openForm('personnel', currentData.personnel.find(x => x.id === id)); } // แก้ไขให้ใช้ array currentData.personnel ให้ถูกต้อง
         
         async function deleteRow(table, id) { 
             if(confirm('ยืนยันการลบข้อมูลถาวร?')) { 
