@@ -557,105 +557,42 @@
             charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { type: 'doughnut', data: { labels: ['จ่ายจริงแล้ว', 'งบเหลือเบิก'], datasets: [{ data: [expAct, expDiff], backgroundColor: ['#9F1239', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } });
         }
 
-        function renderReport() {
-            const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
-            const search = document.getElementById('pub-search').value.toLowerCase();
-            const monthSelect = document.getElementById('pub-month');
-            const selMonth = monthSelect.value;
-            const selMonthTextRaw = monthSelect.options[monthSelect.selectedIndex].text;
-            
-            let monthLabel = "ตลอดปีการศึกษา";
-            if (selMonth !== 'all') {
-                const parts = selMonthTextRaw.split(' ');
-                monthLabel = `เดือน${parts[0]} ${parts[1]}`;
-            }
+      function renderReport() {
+            // ... (โค้ดด้านบนคงเดิมไว้จนถึงส่วนที่คำนวณสรุป)
 
-            let totalEst = { income: 0, expense: 0 };
-            let totalAct = { income: 0, expense: 0 };
-
-            ['income', 'expense'].forEach(type => {
-                const tName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
-                const tColorHex = type === 'income' ? 'text-emerald-700' : 'text-rose-800';
-                const bgHeader = type === 'income' ? 'bg-emerald-50 text-emerald-950' : 'bg-rose-50 text-rose-950';
-                let grandEst = 0, grandAct = 0;
-
-                const plans = currentData.plans.filter(p => p.type === type && p.name.toLowerCase().includes(search));
-                const groups = [...new Set(plans.map(p => p.plan_group))];
-
-                groups.forEach(gName => {
-                    tbl.innerHTML += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
-                    let gEst = 0, gAct = 0;
-                    const gPlans = plans.filter(p => p.plan_group === gName);
-                    const subs = [...new Set(gPlans.map(p => p.sub_category))];
-                    
-                    subs.forEach(sName => {
-                        if(sName && sName !== '-') tbl.innerHTML += `<tr><td colspan="5" class="p-2 pl-4 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
-                        gPlans.filter(p => p.sub_category === sName).forEach(p => {
-                            const txs = currentData.txs.filter(t => {
-                                if(t.plan_id !== p.id || t.status !== 'approved') return false;
-                                if(selMonth === 'all') return true;
-                                return new Date(t.tx_date) <= new Date(selMonth.split('-')[0], selMonth.split('-')[1], 0); 
-                            });
-                            
-                            const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
-                            const est = Number(p.estimated_amount);
-                            gEst += est; gAct += actual;
-                            tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-base">
-                                <td class="p-3 md:p-4 md:pl-6 text-slate-500 font-medium align-top whitespace-nowrap">${p.code||''}</td>
-                                <td class="p-3 md:p-4 font-medium text-slate-700 align-top leading-tight min-w-[200px]">${p.name}</td>
-                                <td class="p-3 md:p-4 text-right align-top whitespace-nowrap">${est>0?formatMoney(est):'-'}</td>
-                                <td class="p-3 md:p-4 text-right font-extrabold ${tColorHex} align-top whitespace-nowrap">${actual>0?formatMoney(actual):'-'}</td>
-                                <td class="p-3 md:p-4 md:pr-6 text-right font-medium align-top whitespace-nowrap">${(p.name.includes('รายได้อื่นๆ') || p.name.includes('รายได้อื่น ๆ')) && (est-actual) < 0 ? '-' : formatMoney(est-actual)}</td>
-                            </tr>`;
-                        });
-                    });
-                    tbl.innerHTML += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-xs md:text-base">
-                        <td colspan="2" class="p-3 md:p-4 text-right">รวม ${gName}</td>
-                        <td class="p-3 md:p-4 text-right whitespace-nowrap">${formatMoney(gEst)}</td>
-                        <td class="p-3 md:p-4 text-right ${tColorHex} whitespace-nowrap">${formatMoney(gAct)}</td>
-                        <td class="p-3 md:p-4 md:pr-6 text-right whitespace-nowrap">${formatMoney(gEst-gAct)}</td>
-                    </tr>`;
-                    grandEst += gEst; grandAct += gAct;
-                });
-                
-                let displayGrandEst = grandEst;
-                let displayGrandAct = grandAct;
-
-                tbl.innerHTML += `<tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl border-b-8 border-white">
-                    <td colspan="2" class="p-3 md:p-5 text-right">รวม${tName}ทั้งสิ้น</td>
-                    <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(displayGrandEst)}</td>
-                    <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(displayGrandAct)}</td>
-                    <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">${formatMoney(displayGrandEst-displayGrandAct)}</td>
-                </tr>`;
-
-                totalEst[type] = displayGrandEst;
-                totalAct[type] = displayGrandAct;
-            });
-
-            // ================= คำนวณสรุปรายได้-รายจ่าย เพิ่มบรรทัดแยกให้ชัดเจน =================
-            let netEst = totalEst.income - totalEst.expense;
-            let netAct = totalAct.income - totalAct.expense;
-            
-            // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
-                <td colspan="2" class="p-3 md:p-6 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
-                <td class="p-3 md:p-6 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-3 md:p-6 text-right text-emerald-800"></td>
-            </tr>`;
+            // ================= แก้ไขส่วนสรุปยอดรวม (Grand Total) ตรงนี้ครับ =================
+            tbl.innerHTML += `<tr>
+            <td class="p-4">${formatThaiDate(a.created_at)}</td>
+            <td class="p-4 font-bold text-primary">${a.contract_no}</td>
+            <td class="p-4 font-semibold">${name}</td>
+            <td class="p-4">${a.activity_name}</td>
+            <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
+            <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
+            <td class="p-4 font-bold ${bal <= 0 ? 'text-emerald-600' : 'text-amber-600'}">${bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์'}</td>
+            <td class="p-4 text-center space-x-2">
+                <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}'})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition">แก้ไข</button>
+                ${bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition">เคลียร์</button>` : ''}
+            </td>
+        </tr>`;
+    });
+}`;
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
-                <td colspan="2" class="p-3 md:p-6 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
-                           <td class="p-3 md:p-6 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-3 md:p-6 text-right text-rose-800"></td>
+                <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
+                <td class="p-3 md:p-4 text-right"></td>
+                <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
+                <td class="p-3 md:p-4 text-right"></td>
             </tr>`;
 
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
             let finalLabel = `${monthLabel} : ${statusText} (คงเหลือ)`;
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
+            // เพิ่ม <td> เปล่าเพื่อให้ครบ 5 คอลัมน์ ตารางจะได้ไม่กุดครับ
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="2" class="p-3 md:p-6 text-right">${finalLabel}</td>
-                <td class="p-3 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
-                <td class="p-3 md:p-6 text-right whitespace-nowrap"></td>
+                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td class="p-4 md:p-6 text-right"></td>
+                <td class="p-4 md:p-6 text-right"></td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
             </tr>`;
         }
 
@@ -710,31 +647,30 @@
             });
         }
 
- function renderAdvances() {
+function renderAdvances() {
     const tbl = document.getElementById('tbl-advance');
     if (!tbl) return;
     tbl.innerHTML = '';
     
-    currentData.advances.forEach(a => {
-        // หาชื่อจากรายชื่อบุคลากร (personnel) โดยเทียบจาก ID
+    const fText = document.getElementById('filter-adv-text')?.value.toLowerCase();
+    const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
+
+    let filteredData = currentData.advances.filter(a => {
         const p = currentData.personnel.find(x => x.id === a.user_id);
-        const name = p ? p.name : "ไม่พบชื่อ";
+        const name = p ? p.name.toLowerCase() : "";
+        const matchText = name.includes(fText) || a.contract_no.toLowerCase().includes(fText) || a.activity_name.toLowerCase().includes(fText);
         
         const bal = Number(a.total_amount) - Number(a.cleared_amount);
-        const btnClear = bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold">เคลียร์</button>` : '';
-
-        tbl.innerHTML += `<tr>
-            <td class="p-4">${formatThaiDate(a.created_at)}</td>
-            <td class="p-4 font-bold">${a.contract_no}</td>
-            <td class="p-4">${name}</td>
-            <td class="p-4">${a.activity_name}</td>
-            <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
-            <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
-            <td class="p-4">${bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์'}</td>
-            <td class="p-4 text-center">${btnClear}</td>
-        </tr>`;
+        const statusMatch = (fStatus === 'all') || (fStatus === 'cleared' && bal <= 0) || (fStatus === 'pending' && bal > 0);
+        return matchText && statusMatch;
     });
-}
+
+    filteredData.sort((a, b) => a.contract_no.localeCompare(b.contract_no));
+
+    filteredData.forEach(a => {
+        const p = currentData.personnel.find(x => x.id === a.user_id);
+        const name = p ? p.name : "ไม่พบชื่อ";
+        const bal = Number(a.total_amount) - Number(a.cleared_amount);
 
         // ================= DYNAMIC FORMS LOGIC =================
         function closeForm() { 
@@ -854,26 +790,26 @@
                     }
                     if(dbError) throw dbError;
 
-                } else if(currentFormMode === 'advance_create') {
-                    const userId = document.getElementById('f_adv_user').value;
-                    
-                    if (!userId) {
-                        hideLoader();
-                        return showToast('กรุณาเลือกผู้ยืม', 'error');
-                    }
+                }else if(currentFormMode === 'advance_create') {
+    const userId = document.getElementById('f_adv_user').value;
+    const py = { 
+        user_id: userId, 
+        contract_no: document.getElementById('f_adv_contract').value, 
+        activity_name: document.getElementById('f_adv_act').value, 
+        total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0,
+        created_at: document.getElementById('f_adv_date').value 
+    };
 
-                    const { error } = await supabaseClient.from('cash_advances').insert([{ 
-                        user_id: userId, 
-                        contract_no: document.getElementById('f_adv_contract').value, 
-                        activity_name: document.getElementById('f_adv_act').value, 
-                        total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, 
-                        cleared_amount: 0,
-                        status: 'pending',
-                        created_at: document.getElementById('f_adv_date').value 
-                    }]);
-                    if(error) throw error;
-
-                } else if(currentFormMode === 'advance_clear') {
+    let dbError = null;
+    if(currentEditId) {
+        const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId);
+        dbError = error;
+    } else {
+        const { error } = await supabaseClient.from('cash_advances').insert([py]);
+        dbError = error;
+    }
+    if(dbError) throw dbError;
+} else if(currentFormMode === 'advance_clear') {
                     let tExp = 0; 
                     const list = []; 
                     const cDate = document.getElementById('f_clear_date').value;
@@ -963,9 +899,22 @@
 
         async function updateStatus(table, id, status) { showLoader(); await supabaseClient.from(table).update({status}).eq('id', id); showToast('อนุมัติแล้ว'); await loadPrivateData(); hideLoader(); }
 
-        function exportData(table) {
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(currentData.advances.map(a => ({ 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': a.personnel?.name, 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดเคลียร์': a.cleared_amount }))), "Sheet1"); XLSX.writeFile(wb, `Advances.xlsx`);
-        }
+      function exportData() {
+    const dataToExport = currentData.advances.map(a => {
+        const p = currentData.personnel.find(x => x.id === a.user_id);
+        return { 
+            'วันที่': formatThaiDate(a.created_at), 
+            'เลขที่สัญญา': a.contract_no, 
+            'ผู้ยืม': p ? p.name : 'ไม่ระบุ', 
+            'กิจกรรม': a.activity_name, 
+            'ยอดยืม': a.total_amount, 
+            'ยอดเคลียร์': a.cleared_amount 
+        };
+    });
+    const wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataToExport), "Advances"); 
+    XLSX.writeFile(wb, `Contract_Report.xlsx`);
+}
 
         function exportFilteredTx(type, mode) {
             const pref = type === 'income' ? 'inc' : 'exp';
