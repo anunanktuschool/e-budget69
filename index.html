@@ -505,29 +505,29 @@
             if(viewId === 'public_home') { renderDashboard(); renderReport(); }
         }
 
-    async function loadPrivateData() {
+  async function loadPrivateData() {
     showLoader();
     try {
         const [rUsers, rPersonnel, rAdv, rTxPlans] = await Promise.all([
             supabaseClient.from('users').select('*').order('name'),
             supabaseClient.from('personnel').select('*').order('name'),
-            // ปรับแก้ตรงนี้: ดึงข้อมูลออกมาแบบไม่ต้องพึ่งพาการ Join หาก Join มีปัญหา
             supabaseClient.from('cash_advances').select('*').order('created_at'),
             supabaseClient.from('transactions').select(`*, budget_plans(name, plan_group)`).order('tx_date')
         ]);
 
         currentData.users = rUsers.data || [];
         currentData.personnel = rPersonnel.data || [];
-        // กรณีดึงชื่อผู้ยืมไม่ขึ้น ให้ดึงแค่ข้อมูลจาก cash_advances มาก่อน
         currentData.advances = rAdv.data || [];
         currentData.txs = rTxPlans.data || currentData.txs;
 
-        console.log("Loaded Advances:", currentData.advances); // เช็คใน F12 (Console) ว่าได้ข้อมูลมาไหม
-        
-        renderPersonnel(); renderPlans(); renderTx('income'); renderTx('expense'); renderAdvances();
+        renderPersonnel(); 
+        renderPlans(); 
+        renderTx('income'); 
+        renderTx('expense'); 
+        renderAdvances(); // เรียกให้มันวาดตารางใหม่
+        hideLoader();
     } catch (err) {
-        console.error("Load Error:", err);
-    } finally {
+        console.error("Error:", err);
         hideLoader();
     }
 }
@@ -637,14 +637,15 @@
             let netAct = totalAct.income - totalAct.expense;
             
             // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-6 border-white">
-                <td colspan="2" class="p-4 md:p-6 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
-                <td class="p-4 md:p-6 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-4 md:p-6 text-right text-emerald-800"></td>
+            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
+                <td colspan="2" class="p-3 md:p-6 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
+                <td class="p-3 md:p-6 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
+                <td class="p-3 md:p-6 text-right text-emerald-800"></td>
             </tr>`;
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-6 border-white">
-                <td colspan="2" class="p4 md:p-6 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-4 md:p-6 text-right text-rose-800"></td>
+            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
+                <td colspan="2" class="p-3 md:p-6 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
+                           <td class="p-3 md:p-6 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
+                <td class="p-3 md:p-6 text-right text-rose-800"></td>
             </tr>`;
 
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
@@ -652,9 +653,9 @@
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
+                <td colspan="2" class="p-3 md:p-6 text-right">${finalLabel}</td>
+                <td class="p-3 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                <td class="p-3 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
         }
 
@@ -709,18 +710,19 @@
             });
         }
 
-       function renderAdvances() {
-    const tbl = document.getElementById('tbl-advance'); 
-    if(!tbl) return; 
+ function renderAdvances() {
+    const tbl = document.getElementById('tbl-advance');
+    if (!tbl) return;
     tbl.innerHTML = '';
     
-    // แสดงข้อมูลทั้งหมดก่อน (ไม่สน Filter) เพื่อทดสอบว่าข้อมูลโผล่ไหม
     currentData.advances.forEach(a => {
-        // หาชื่อจากรายการบุคลากร (กรณี Join ไม่ติด)
+        // หาชื่อจากรายชื่อบุคลากร (personnel) โดยเทียบจาก ID
         const p = currentData.personnel.find(x => x.id === a.user_id);
-        const name = p ? p.name : "ไม่ระบุชื่อ";
+        const name = p ? p.name : "ไม่พบชื่อ";
         
         const bal = Number(a.total_amount) - Number(a.cleared_amount);
+        const btnClear = bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold">เคลียร์</button>` : '';
+
         tbl.innerHTML += `<tr>
             <td class="p-4">${formatThaiDate(a.created_at)}</td>
             <td class="p-4 font-bold">${a.contract_no}</td>
@@ -728,10 +730,8 @@
             <td class="p-4">${a.activity_name}</td>
             <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
             <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
-            <td class="p-4">${a.status}</td>
-            <td class="p-4 text-center">
-                <button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-600 font-bold">ลบ</button>
-            </td>
+            <td class="p-4">${bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์'}</td>
+            <td class="p-4 text-center">${btnClear}</td>
         </tr>`;
     });
 }
