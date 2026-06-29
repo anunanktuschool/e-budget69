@@ -208,22 +208,23 @@
                         </div>
                     </div>
 
-                    <div class="card overflow-hidden border border-slate-200 w-full">
-                        <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
-                            <table class="w-full text-left border-collapse min-w-[700px] relative" id="report-table">
-                                <thead class="bg-slate-900 text-white shadow-sm sticky top-0 z-30">
-                                    <tr class="border-b border-slate-800 text-xs md:text-base whitespace-nowrap">
-                                        <th class="p-3 md:p-4 md:pl-6 w-24">รหัส</th>
-                                        <th class="p-3 md:p-4 min-w-[200px]">รายการ</th>
-                                        <th class="p-3 md:p-4 text-right">ตั้งต้น</th>
-                                        <th class="p-3 md:p-4 text-right">รับ/จ่าย</th>
-                                        <th class="p-3 md:p-4 md:pr-6 text-right">คงเหลือ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbl-report" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                    </div>
+       <div class="card overflow-hidden border border-slate-200 w-full">
+    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+        <table class="w-full text-left border-collapse min-w-[700px] relative" id="report-table">
+            
+            <thead class="sticky top-0 z-30 shadow-sm">
+    <tr class="border-b border-slate-300 text-slate-800 text-xs md:text-base whitespace-nowrap">
+        <th class="bg-white p-3 md:p-4 md:pl-6 w-24">รหัส</th>
+        <th class="bg-white p-3 md:p-4 min-w-[200px]">รายการ</th>
+        <th class="bg-white p-3 md:p-4 text-right">ตั้งต้น</th>
+        <th class="bg-white p-3 md:p-4 text-right">รับ/จ่าย</th>
+        <th class="bg-white p-3 md:p-4 md:pr-6 text-right">คงเหลือ</th>
+    </tr>
+</thead>
+            <tbody id="tbl-report" class="divide-y divide-slate-100"></tbody>
+        </table>
+    </div>
+</div>
                 </section>
             </div>
 
@@ -251,26 +252,25 @@
                         <button onclick="exportFilteredTx('income', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden">
-                    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
-                        <table class="w-full text-left min-w-[900px] border-collapse relative">
-                            <thead class="sticky top-0 z-20 shadow-sm bg-slate-100">
-                                <tr class="text-slate-700 border-b whitespace-nowrap">
-                                    <th class="p-4">วันที่รับ</th>
-                                    <th class="p-4">หมวดงบประมาณ</th>
-                                    <th class="p-4 text-right">ยอดเงิน (฿)</th>
-                                    <th class="p-4">หมายเหตุ</th>
-                                    <th class="p-4">สถานะ</th>
-                                    <th class="p-4 text-center">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-income" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
-                        </table>
-                    </div>
-                </div>
+               <div class="card overflow-hidden">
+            <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+                <table class="w-full text-left min-w-[900px] border-collapse relative">
+                    
+                    <thead class="sticky top-0 z-20 shadow-sm">
+                        <tr class="text-slate-700 border-b border-slate-200 whitespace-nowrap">
+                            <th class="bg-white p-4">วันที่รับ</th>
+                            <th class="bg-white p-4">หมวดงบประมาณ</th>
+                            <th class="bg-white p-4 text-right">ยอดเงิน (฿)</th>
+                            <th class="bg-white p-4">หมายเหตุ</th>
+                            <th class="bg-white p-4">สถานะ</th>
+                            <th class="bg-white p-4 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbl-income" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+                </table>
             </div>
-
-            <div id="view-expense" class="app-view max-w-7xl mx-auto hidden space-y-6">
+        </div>
+    </div> <div id="view-expense" class="app-view max-w-7xl mx-auto hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">บันทึกรายการจ่ายจริง</h2>
                     <button onclick="openForm('expense')" class="w-full sm:w-auto bg-primary hover:bg-rose-950 text-white px-6 py-3 rounded-xl font-bold shadow transition flex justify-center items-center gap-2"><i data-lucide="plus-circle"></i> บันทึกเบิกจ่ายใหม่</button>
@@ -286,26 +286,26 @@
                         <button onclick="exportFilteredTx('expense', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden">
-                    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
-                        <table class="w-full text-left min-w-[900px] border-collapse relative">
-                            <thead class="sticky top-0 z-20 shadow-sm bg-slate-100">
-                                <tr class="text-slate-700 border-b whitespace-nowrap">
-                                    <th class="p-4">วันที่จ่าย</th>
-                                    <th class="p-4">หมวดงบประมาณ</th>
-                                    <th class="p-4 text-right">ยอดเงิน (฿)</th>
-                                    <th class="p-4">หมายเหตุ</th>
-                                    <th class="p-4">สถานะ</th>
-                                    <th class="p-4 text-center">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-expense" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+               <div class="card overflow-hidden">
+            <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+                <table class="w-full text-left min-w-[900px] border-collapse relative">
+                    
+                    <thead class="sticky top-0 z-20 shadow-sm">
+                        <tr class="text-slate-700 border-b border-slate-200 whitespace-nowrap">
+                            <th class="bg-white p-4">วันที่จ่าย</th>
+                            <th class="bg-white p-4">หมวดงบประมาณ</th>
+                            <th class="bg-white p-4 text-right">ยอดเงิน (฿)</th>
+                            <th class="bg-white p-4">หมายเหตุ</th>
+                            <th class="bg-white p-4">สถานะ</th>
+                            <th class="bg-white p-4 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
 
-            <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
+                    <tbody id="tbl-expense" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+                </table>
+            </div>
+        </div>
+    </div> <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">สัญญายืมเงินทดรองจ่าย</h2>
                     <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="flex-1 sm:flex-none bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm">Export</button><button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
@@ -413,33 +413,7 @@
         const formatThaiDate = (iso) => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()+543}`; };
 
         // ================= INIT =================
-        async function loadPublicData() {
-            showLoader();
-            const [rPlans, rTx] = await Promise.all([
-                supabaseClient.from('budget_plans').select('*').order('seq'),
-                supabaseClient.from('transactions').select(`*`).order('tx_date')
-            ]);
-            currentData.plans = rPlans.data || []; currentData.txs = rTx.data || [];
-            renderDashboard(); renderReport();
-            hideLoader();
-        }
-		async function loadPublicData() {
-    showLoader();
-    const [rPlans, rTx, rAdv] = await Promise.all([ // 1. เพิ่ม rAdv
-        supabaseClient.from('budget_plans').select('*').order('seq'),
-        supabaseClient.from('transactions').select(`*`).order('tx_date'),
-        supabaseClient.from('advances').select(`*`) // 2. ดึงข้อมูลจากตาราง advances
-    ]);
-    currentData.plans = rPlans.data || [];
-    currentData.txs = rTx.data || [];
-    currentData.advances = rAdv.data || []; // 3. เก็บข้อมูลไว้ในตัวแปร
-    
-    renderDashboard();
-    renderReport();
-    renderAdvances(); // 4. เรียกฟังก์ชันแสดงผลตารางสัญญายืมเงิน
-    hideLoader();
-}
-        window.onload = loadPublicData;
+      
 
         // ================= AUTH =================
         function showLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
@@ -533,33 +507,58 @@
             if(viewId === 'public_home') { renderDashboard(); renderReport(); }
         }
 
+        // ================= INIT =================
+        async function loadPublicData() {
+            showLoader();
+            try {
+                // เปลี่ยนจาก 'advances' เป็น 'cash_advances' ให้ตรงกับระบบหลังบ้าน
+                const [rPlans, rTx, rAdv] = await Promise.all([
+                    supabaseClient.from('budget_plans').select('*').order('seq'),
+                    supabaseClient.from('transactions').select(`*`).order('tx_date'),
+                    supabaseClient.from('cash_advances').select(`*`) 
+                ]);
+                currentData.plans = rPlans.data || [];
+                currentData.txs = rTx.data || [];
+                currentData.advances = rAdv.data || [];
+                
+                renderDashboard();
+                renderReport();
+            } catch (err) {
+                console.error("Public Data Load Error:", err);
+            } finally {
+                hideLoader();
+            }
+        }
+        window.onload = loadPublicData;
+
+        // ... (คงส่วน AUTH และ NAVIGATION ไว้เหมือนเดิม) ...
+
         async function loadPrivateData() {
             showLoader();
-            const [rUsers, rPersonnel, rAdv, rTxPlans] = await Promise.all([
-                supabaseClient.from('users').select('*').order('name'),
-                supabaseClient.from('personnel').select('*').order('name'),
-                supabaseClient
-                    .from('cash_advances')
-                    .select(`
-                        *,
-                        personnel(name)
-                    `)
-                    .order('created_at'),
+            try {
+                const [rUsers, rPersonnel, rAdv, rTxPlans] = await Promise.all([
+                    supabaseClient.from('users').select('*').order('name'),
+                    supabaseClient.from('personnel').select('*').order('name'),
+                    supabaseClient.from('cash_advances').select(`*, personnel(name)`).order('created_at'),
+                    supabaseClient.from('transactions').select(`*, budget_plans(name, plan_group)`).order('tx_date')
+                ]);
 
-                supabaseClient
-                    .from('transactions')
-                    .select(`*, budget_plans(name, plan_group)`)
-                    .order('tx_date')
-            ]);
-
-            currentData.users = rUsers.data || [];
-            currentData.personnel = rPersonnel.data || [];
-            currentData.advances = rAdv.data || [];
-            currentData.txs = rTxPlans.data || currentData.txs;
-            renderPersonnel(); renderPlans(); renderTx('income'); renderTx('expense'); renderAdvances();
-            hideLoader();
+                currentData.users = rUsers.data || [];
+                currentData.personnel = rPersonnel.data || [];
+                currentData.advances = rAdv.data || [];
+                currentData.txs = rTxPlans.data || currentData.txs;
+                
+                renderPersonnel(); 
+                renderPlans(); 
+                renderTx('income'); 
+                renderTx('expense'); 
+                renderAdvances();
+            } catch (err) {
+                console.error("Private Data Load Error:", err);
+            } finally {
+                hideLoader();
+            }
         }
-
         // ================= RENDERING =================
         function renderDashboard() {
             const incEst = currentData.plans.filter(p=>p.type==='income').reduce((s,p)=>s+Number(p.estimated_amount),0);
@@ -683,7 +682,7 @@
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td colspan="3" class="p-4 md:p-6 text-right">${finalLabel}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
