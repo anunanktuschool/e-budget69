@@ -251,10 +251,23 @@
                         <button onclick="exportFilteredTx('income', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[900px]">
-                    <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่รับ</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
-                    <tbody id="tbl-income" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
-                </table></div></div>
+                <div class="card overflow-hidden">
+                    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+                        <table class="w-full text-left min-w-[900px] border-collapse relative">
+                            <thead class="sticky top-0 z-20 shadow-sm bg-slate-100">
+                                <tr class="text-slate-700 border-b whitespace-nowrap">
+                                    <th class="p-4">วันที่รับ</th>
+                                    <th class="p-4">หมวดงบประมาณ</th>
+                                    <th class="p-4 text-right">ยอดเงิน (฿)</th>
+                                    <th class="p-4">หมายเหตุ</th>
+                                    <th class="p-4">สถานะ</th>
+                                    <th class="p-4 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-income" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div id="view-expense" class="app-view max-w-7xl mx-auto hidden space-y-6">
@@ -273,10 +286,23 @@
                         <button onclick="exportFilteredTx('expense', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[900px]">
-                    <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่จ่าย</th><th class="p-4">หมวดงบประมาณ</th><th class="p-4 text-right">ยอดเงิน (฿)</th><th class="p-4">หมายเหตุ</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
-                    <tbody id="tbl-expense" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
-                </table></div></div>
+                <div class="card overflow-hidden">
+                    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+                        <table class="w-full text-left min-w-[900px] border-collapse relative">
+                            <thead class="sticky top-0 z-20 shadow-sm bg-slate-100">
+                                <tr class="text-slate-700 border-b whitespace-nowrap">
+                                    <th class="p-4">วันที่จ่าย</th>
+                                    <th class="p-4">หมวดงบประมาณ</th>
+                                    <th class="p-4 text-right">ยอดเงิน (฿)</th>
+                                    <th class="p-4">หมายเหตุ</th>
+                                    <th class="p-4">สถานะ</th>
+                                    <th class="p-4 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-expense" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
@@ -287,10 +313,25 @@
                 <div class="card p-4 bg-white border border-slate-200 flex gap-4">
                     <div class="relative flex-1"><i data-lucide="search" class="absolute left-3.5 top-3 text-slate-400 w-5 h-5"></i><input type="text" id="filter-adv-text" placeholder="ค้นหา สัญญา, โครงการ, ผู้ยืม..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:bg-white focus:border-primary text-sm font-medium" onkeyup="renderAdvances()"></div>
                 </div>
-                <div class="card overflow-hidden"><div class="overflow-x-auto w-full"><table class="w-full text-left min-w-[1000px]">
-                    <thead><tr class="bg-slate-100 text-slate-700 border-b whitespace-nowrap"><th class="p-4">วันที่ยืม</th><th class="p-4">เลขที่สัญญา</th><th class="p-4">บุคลากรผู้ยืม</th><th class="p-4">ชื่อโครงการ/กิจกรรม</th><th class="p-4 text-right">ยอดยืม (฿)</th><th class="p-4 text-right">ยอดเคลียร์ (฿)</th><th class="p-4">สถานะ</th><th class="p-4 text-center">จัดการ</th></tr></thead>
-                    <tbody id="tbl-advance" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
-                </table></div></div>
+                <div class="card overflow-hidden">
+                    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+                        <table class="w-full text-left min-w-[1000px] border-collapse relative">
+                            <thead class="sticky top-0 z-20 shadow-sm bg-slate-100">
+                                <tr class="text-slate-700 border-b whitespace-nowrap">
+                                    <th class="p-4">วันที่ยืม</th>
+                                    <th class="p-4">เลขที่สัญญา</th>
+                                    <th class="p-4">บุคลากรผู้ยืม</th>
+                                    <th class="p-4">ชื่อโครงการ/กิจกรรม</th>
+                                    <th class="p-4 text-right">ยอดยืม (฿)</th>
+                                    <th class="p-4 text-right">ยอดเคลียร์ (฿)</th>
+                                    <th class="p-4">สถานะ</th>
+                                    <th class="p-4 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-advance" class="divide-y divide-slate-100 text-sm md:text-base"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div id="view-personnel" class="app-view max-w-7xl mx-auto hidden space-y-6">
