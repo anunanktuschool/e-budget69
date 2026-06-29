@@ -634,8 +634,7 @@
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-4 border-white shadow-lg">
                 <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${netEst < 0 ? '-' : ''}${formatMoney(Math.abs(netEst))}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
         }
