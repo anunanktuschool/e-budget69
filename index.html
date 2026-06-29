@@ -614,12 +614,29 @@
                     <td class="p-3 md:p-5 text-right whitespace-nowrap text-rose-700">${formatMoney(globalExpAct)}</td>
                     <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">-</td>
                 </tr>
-                <tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl">
-                    <td colspan="2" class="p-3 md:p-5 text-right">ยอดสูง/ต่ำ (${diffText})</td>
-                    <td class="p-3 md:p-5 text-right whitespace-nowrap">-</td>
-                    <td class="p-3 md:p-5 text-right whitespace-nowrap ${diff >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(Math.abs(diff))}</td>
-                    <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">-</td>
-                </tr>
+                  // เก็บยอดรวมไว้เพื่อคำนวณหักลบ
+                totalEst[type] = displayGrandEst;
+                totalAct[type] = displayGrandAct;
+            });
+
+            // ================= คำนวณสรุปรายได้-รายจ่าย =================
+            let netEst = totalEst.income - totalEst.expense;
+            let netAct = totalAct.income - totalAct.expense;
+            
+            // กำหนดข้อความตามผลลัพธ์
+            let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่าจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
+            let finalLabel = `${monthLabel} : ${statusText}`;
+            
+            let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
+
+            // เพิ่มแถวสรุปบรรทัดสุดท้าย
+            tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-4 border-white shadow-lg">
+                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${netEst < 0 ? '-' : ''}${formatMoney(Math.abs(netEst))}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
+            </tr>`;
+        }
             `;
         }
 
