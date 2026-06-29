@@ -565,7 +565,6 @@
                             const txs = currentData.txs.filter(t => {
                                 if(t.plan_id !== p.id || t.status !== 'approved') return false;
                                 if(selMonth === 'all') return true;
-                                // แก้ไขการเปรียบเทียบเดือนเพื่อแก้ปัญหาข้อมูลวันที่ 31 หาย
                                 return t.tx_date.substring(0, 7) <= selMonth; 
                             });
                             
@@ -604,9 +603,22 @@
                 </tr>`;
             });
 
-            // เพิ่มสรุปด้านล่างทั้งหมด (รวมจ่ายจริงทั้งหมด และ ยอดสูงต่ำ)
+            // สร้างเดือนที่จะแสดงในบรรทัดสุดท้าย
+            let monthLabel = "ตลอดปีการศึกษา";
+            if (selMonth !== 'all') {
+                const monthNames = { 
+                    "01": "มกราคม", "02": "กุมภาพันธ์", "03": "มีนาคม", "04": "เมษายน", 
+                    "05": "พฤษภาคม", "06": "มิถุนายน", "07": "กรกฎาคม", "08": "สิงหาคม", 
+                    "09": "กันยายน", "10": "ตุลาคม", "11": "พฤศจิกายน", "12": "ธันวาคม" 
+                };
+                const m = selMonth.split('-')[1];
+                monthLabel = `เดือน${monthNames[m]}`;
+            }
+
+            // คำนวณส่วนต่าง และสร้างข้อความ
             let diff = globalIncAct - globalExpAct;
-            let diffText = diff >= 0 ? 'รายรับสูงกว่ารายจ่าย' : 'รายจ่ายสูงกว่ารายรับ';
+            let diffLabel = diff >= 0 ? 'รายได้รับจริงมากกว่าจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
+
             tbl.innerHTML += `
                 <tr class="bg-slate-100 text-slate-800 font-extrabold text-sm md:text-xl border-b border-slate-200 border-t-8 border-white">
                     <td colspan="2" class="p-3 md:p-5 text-right">รวมค่าใช้จ่ายจริงทั้งหมด</td>
@@ -614,29 +626,12 @@
                     <td class="p-3 md:p-5 text-right whitespace-nowrap text-rose-700">${formatMoney(globalExpAct)}</td>
                     <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">-</td>
                 </tr>
-                  // เก็บยอดรวมไว้เพื่อคำนวณหักลบ
-                totalEst[type] = displayGrandEst;
-                totalAct[type] = displayGrandAct;
-            });
-
-            // ================= คำนวณสรุปรายได้-รายจ่าย =================
-            let netEst = totalEst.income - totalEst.expense;
-            let netAct = totalAct.income - totalAct.expense;
-            
-            // กำหนดข้อความตามผลลัพธ์
-            let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่าจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
-            let finalLabel = `${monthLabel} : ${statusText}`;
-            
-            let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
-
-            // เพิ่มแถวสรุปบรรทัดสุดท้าย
-            tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-4 border-white shadow-lg">
-                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${netEst < 0 ? '-' : ''}${formatMoney(Math.abs(netEst))}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
-                <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
-            </tr>`;
-        }
+                <tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl">
+                    <td colspan="2" class="p-3 md:p-5 text-right">${monthLabel} ${diffLabel}</td>
+                    <td class="p-3 md:p-5 text-right whitespace-nowrap">-</td>
+                    <td class="p-3 md:p-5 text-right whitespace-nowrap ${diff >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(Math.abs(diff))}</td>
+                    <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">-</td>
+                </tr>
             `;
         }
 
