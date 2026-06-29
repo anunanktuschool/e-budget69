@@ -423,6 +423,22 @@
             renderDashboard(); renderReport();
             hideLoader();
         }
+		async function loadPublicData() {
+    showLoader();
+    const [rPlans, rTx, rAdv] = await Promise.all([ // 1. เพิ่ม rAdv
+        supabaseClient.from('budget_plans').select('*').order('seq'),
+        supabaseClient.from('transactions').select(`*`).order('tx_date'),
+        supabaseClient.from('advances').select(`*`) // 2. ดึงข้อมูลจากตาราง advances
+    ]);
+    currentData.plans = rPlans.data || [];
+    currentData.txs = rTx.data || [];
+    currentData.advances = rAdv.data || []; // 3. เก็บข้อมูลไว้ในตัวแปร
+    
+    renderDashboard();
+    renderReport();
+    renderAdvances(); // 4. เรียกฟังก์ชันแสดงผลตารางสัญญายืมเงิน
+    hideLoader();
+}
         window.onload = loadPublicData;
 
         // ================= AUTH =================
