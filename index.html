@@ -429,7 +429,6 @@
                 }
                 setupNavigation(); loadPrivateData(); showToast('ยินดีต้อนรับ ' + currentUser.name); 
 
-                // เปิด Sidebar อัตโนมัติเมื่อล็อคอินผ่านมือถือ
                 if (window.innerWidth < 768 && currentUser.role !== 'Management') {
                     const sb = document.getElementById('admin-sidebar');
                     const ov = document.getElementById('sidebar-overlay');
@@ -540,7 +539,19 @@
         function renderReport() {
             const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
             const search = document.getElementById('pub-search').value.toLowerCase();
-            const selMonth = document.getElementById('pub-month').value;
+            const monthSelect = document.getElementById('pub-month');
+            const selMonth = monthSelect.value;
+            const selMonthTextRaw = monthSelect.options[monthSelect.selectedIndex].text;
+            
+            // ดึงชื่อเดือนให้สวยงาม
+            let monthLabel = "ตลอดปีการศึกษา";
+            if (selMonth !== 'all') {
+                const parts = selMonthTextRaw.split(' ');
+                monthLabel = `เดือน${parts[0]} ${parts[1]}`;
+            }
+
+            let totalEst = { income: 0, expense: 0 };
+            let totalAct = { income: 0, expense: 0 };
 
             ['income', 'expense'].forEach(type => {
                 const tName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
@@ -596,7 +607,29 @@
                     <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(displayGrandAct)}</td>
                     <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">${formatMoney(displayGrandEst-displayGrandAct)}</td>
                 </tr>`;
+
+                // เก็บยอดรวมไว้เพื่อคำนวณหักลบ
+                totalEst[type] = displayGrandEst;
+                totalAct[type] = displayGrandAct;
             });
+
+            // ================= คำนวณสรุปรายได้-รายจ่าย =================
+            let netEst = totalEst.income - totalEst.expense;
+            let netAct = totalAct.income - totalAct.expense;
+            
+            // กำหนดข้อความตามผลลัพธ์
+            let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่าจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
+            let finalLabel = `${monthLabel} : ${statusText}`;
+            
+            let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
+
+            // เพิ่มแถวสรุปบรรทัดสุดท้าย
+            tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-4 border-white shadow-lg">
+                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${netEst < 0 ? '-' : ''}${formatMoney(Math.abs(netEst))}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
+            </tr>`;
         }
 
         // ================= STAFF ADMIN RENDERING =================
@@ -667,10 +700,8 @@
             let opts = currentData.plans.filter(p => p.type === (mode==='advance_clear'?'expense':mode)).map(p => `<option value="${p.id}" ${rowData?.plan_id===p.id?'selected':''}>[${p.plan_group}] ${p.name}</option>`).join('');
 
             if(mode === 'advance_clear') {
-                // เอาคำว่า required ออกจาก select ที่มี Choices.js
                 row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ยอดใช้ไปจริง (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             } else {
-                // เอาคำว่า required ออกจาก select ที่มี Choices.js
                 row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกรายการงบประมาณ</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-36"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ยอดเงิน (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm outline-none" value="${rowData?.amount||''}" required></div><div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">หมายเหตุเพิ่มเติม</label><input type="text" class="row-note w-full border p-2 rounded-xl text-sm outline-none" value="${rowData?.note||''}"></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             }
             container.appendChild(row); lucide.createIcons();
@@ -698,7 +729,6 @@
                     <div><label class="font-bold text-sm mb-1 block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="border p-3 rounded-xl w-full" required></div>
                     <div><label class="font-bold text-sm mb-1 block text-rose-700">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="border-2 border-rose-300 bg-rose-50 p-4 rounded-xl font-black text-xl md:text-2xl text-rose-700 w-full md:w-1/2 outline-none" required></div>
                 </div>`;
-                // ใช้ Choices.js ให้ผู้ใช้งานพิมพ์ค้นหาชื่อได้เอง
                 setTimeout(() => {
                     choicesInstances.push(new Choices(document.getElementById('f_adv_user'), { searchEnabled: true, itemSelectText: '', noResultsText: 'ไม่พบข้อมูลผู้ยืม' }));
                 }, 50);
@@ -775,13 +805,11 @@
                 } else if(currentFormMode === 'advance_create') {
                     const userId = document.getElementById('f_adv_user').value;
                     
-                    // เช็คตรวจสอบข้อมูลผู้ยืมที่นี่แทนการใช้ HTML required
                     if (!userId) {
                         hideLoader();
                         return showToast('กรุณาเลือกผู้ยืม', 'error');
                     }
 
-                    // เพิ่ม default values (cleared_amount, status) ให้ครบถ้วนป้องกันฐานข้อมูลตีกลับ
                     const { error } = await supabaseClient.from('cash_advances').insert([{ 
                         user_id: userId, 
                         contract_no: document.getElementById('f_adv_contract').value, 
