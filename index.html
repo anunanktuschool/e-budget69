@@ -652,12 +652,15 @@ function renderAdvances() {
     if (!tbl) return;
     tbl.innerHTML = '';
     
-    const fText = document.getElementById('filter-adv-text')?.value.toLowerCase();
+    // ค้นหาค่าจากช่องค้นหาและตัวเลือกสถานะ
+    const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
+    // หมายเหตุ: ใน HTML ต้องมี <select id="filter-adv-status"> นะครับ
     const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
 
+    // กรองข้อมูล
     let filteredData = currentData.advances.filter(a => {
         const p = currentData.personnel.find(x => x.id === a.user_id);
-        const name = p ? p.name.toLowerCase() : "";
+        const name = p ? p.name.toLowerCase() : "ไม่พบชื่อ";
         const matchText = name.includes(fText) || a.contract_no.toLowerCase().includes(fText) || a.activity_name.toLowerCase().includes(fText);
         
         const bal = Number(a.total_amount) - Number(a.cleared_amount);
@@ -665,12 +668,31 @@ function renderAdvances() {
         return matchText && statusMatch;
     });
 
+    // เรียงตามเลขที่สัญญา (จากน้อยไปมาก)
     filteredData.sort((a, b) => a.contract_no.localeCompare(b.contract_no));
 
+    // แสดงผล
     filteredData.forEach(a => {
         const p = currentData.personnel.find(x => x.id === a.user_id);
         const name = p ? p.name : "ไม่พบชื่อ";
         const bal = Number(a.total_amount) - Number(a.cleared_amount);
+        const statusLabel = bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์';
+
+        tbl.innerHTML += `<tr>
+            <td class="p-4">${formatThaiDate(a.created_at)}</td>
+            <td class="p-4 font-bold text-primary">${a.contract_no}</td>
+            <td class="p-4 font-semibold">${name}</td>
+            <td class="p-4">${a.activity_name}</td>
+            <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
+            <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
+            <td class="p-4 font-bold ${bal <= 0 ? 'text-emerald-600' : 'text-amber-600'}">${statusLabel}</td>
+            <td class="p-4 text-center space-x-2">
+                <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">แก้ไข</button>
+                ${bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold">เคลียร์</button>` : ''}
+            </td>
+        </tr>`;
+    });
+}
 
         // ================= DYNAMIC FORMS LOGIC =================
         function closeForm() { 
