@@ -654,7 +654,7 @@
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="3" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td colspan="" class="p-4 md:p-6 text-right">${finalLabel}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
