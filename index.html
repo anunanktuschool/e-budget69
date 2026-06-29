@@ -638,23 +638,23 @@
             let netAct = totalAct.income - totalAct.expense;
             
             // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
-                <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800"></td>
-            </tr>`;
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
-                <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
-                           <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-3 md:p-4 text-right text-rose-800"></td>
-            </tr>`;
+         tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
+            <td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
+            <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
+            <td class="p-3 md:p-4 text-right"></td>
+        </tr>`;
+           tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
+            <td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
+            <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
+            <td class="p-3 md:p-4 text-right"></td>
+        </tr>`;
 
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
             let finalLabel = `${monthLabel} : ${statusText} (คงเหลือ)`;
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td colspan="3" class="p-4 md:p-6 text-right">${finalLabel}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
                 <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
@@ -711,19 +711,65 @@
             });
         }
 
-        function renderAdvances() {
-            const fText = document.getElementById('filter-adv-text')?.value.toLowerCase();
-            const tbl = document.getElementById('tbl-advance'); if(!tbl) return; tbl.innerHTML = '';
-            
-            currentData.advances.filter(a => {
-                if(!fText) return true;
-                return a.contract_no?.toLowerCase().includes(fText) || a.activity_name?.toLowerCase().includes(fText) || a.personnel?.name?.toLowerCase().includes(fText);
-            }).forEach(a => {
-                const bal = Number(a.total_amount) - Number(a.cleared_amount);
-                const btnClear = bal > 0 ? `<button onclick="openForm('advance_clear', '${a.id}')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2 mb-1 md:mb-0">เคลียร์สัญญา</button>` : '';
-                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(a.created_at)}</td><td class="p-3 md:p-4 font-extrabold text-slate-800 text-base md:text-lg whitespace-nowrap">${a.contract_no}</td><td class="p-3 md:p-4 font-bold text-slate-600 whitespace-nowrap">${a.personnel?.name}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[200px] md:max-w-xs">${a.activity_name}</td><td class="p-3 md:p-4 text-right font-bold text-rose-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.total_amount)}</td><td class="p-3 md:p-4 text-right font-bold text-emerald-700 text-base md:text-lg whitespace-nowrap">${formatMoney(a.cleared_amount)}<br><span class="text-[10px] md:text-xs font-semibold text-slate-400">ค้างเคลียร์ ${formatMoney(bal)}</span></td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${bal<=0||a.status==='cleared'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${bal<=0||a.status==='cleared'?'เคลียร์หมด':'รอเคลียร์'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnClear}<button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
-            });
-        }
+      // --- ก๊อปปี้ฟังก์ชันนี้ไปวางทับ function renderAdvances() เดิมในไฟล์ของคุณ ---
+function renderAdvances() {
+    const tbl = document.getElementById('tbl-advance');
+    if (!tbl) return;
+    tbl.innerHTML = '';
+    
+    // ดึงค่าจากฟิลเตอร์
+    const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
+    const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
+
+    // กรองและเรียงลำดับ
+    let filteredData = currentData.advances.filter(a => {
+        const p = currentData.personnel.find(x => x.id === a.user_id);
+        const name = p ? p.name.toLowerCase() : "";
+        const matchText = name.includes(fText) || (a.contract_no || "").toLowerCase().includes(fText) || (a.activity_name || "").toLowerCase().includes(fText);
+        
+        const bal = Number(a.total_amount) - Number(a.cleared_amount);
+        const statusMatch = (fStatus === 'all') || (fStatus === 'cleared' && bal <= 0) || (fStatus === 'pending' && bal > 0);
+        return matchText && statusMatch;
+    });
+
+    filteredData.sort((a, b) => (a.contract_no || "").localeCompare(b.contract_no || ""));
+
+    // แสดงผล
+    filteredData.forEach(a => {
+        const p = currentData.personnel.find(x => x.id === a.user_id);
+        const name = p ? p.name : "ไม่พบชื่อ";
+        const bal = Number(a.total_amount) - Number(a.cleared_amount);
+        
+        tbl.innerHTML += `<tr class="border-b hover:bg-gray-50">
+            <td class="p-4">${formatThaiDate(a.created_at)}</td>
+            <td class="p-4 font-bold text-primary">${a.contract_no || ''}</td>
+            <td class="p-4">${name}</td>
+            <td class="p-4">${a.activity_name || ''}</td>
+            <td class="p-4 text-right">${formatMoney(a.total_amount)}</td>
+            <td class="p-4 text-right">${formatMoney(a.cleared_amount)}</td>
+            <td class="p-4 font-bold ${bal <= 0 ? 'text-green-600' : 'text-orange-600'}">${bal <= 0 ? 'เคลียร์หมด' : 'รอเคลียร์'}</td>
+            <td class="p-4 text-center">
+                <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="bg-blue-600 text-white px-4 py-2 rounded">แก้ไข</button>
+            </td>
+        </tr>`;
+    });
+}
+function exportData() {
+    const dataToExport = currentData.advances.map(a => {
+        const p = currentData.personnel.find(x => x.id === a.user_id);
+        return { 
+            'วันที่': formatThaiDate(a.created_at), 
+            'เลขที่สัญญา': a.contract_no, 
+            'ผู้ยืม': p ? p.name : 'ไม่ระบุ', 
+            'กิจกรรม': a.activity_name, 
+            'ยอดยืม': a.total_amount, 
+            'ยอดเคลียร์': a.cleared_amount 
+        };
+    });
+    const wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataToExport), "Advances"); 
+    XLSX.writeFile(wb, `Contract_Report.xlsx`);
+}
 
         // ================= DYNAMIC FORMS LOGIC =================
         function closeForm() { 
