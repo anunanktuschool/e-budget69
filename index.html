@@ -639,14 +639,14 @@
             
             // เพิ่มแถวสรุปรายรับและรายจ่ายทั้งหมดให้เห็นชัดเจนก่อนหักลบ
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white">
-                <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
-                <td class="p-3 md:p-4 text-right text-emerald-800"></td>
+                <td colspan="2" class="p-4 md:p-6 text-right">สรุปยอดรวมรายรับทั้งหมด</td>
+                <td class="p-4 md:p-6 text-right text-emerald-800">${formatMoney(totalAct.income)}</td>
+                <td class="p-4 md:p-6 text-right text-emerald-800"></td>
             </tr>`;
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white">
-                <td colspan="2" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
-                           <td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
-                <td class="p-3 md:p-4 text-right text-rose-800"></td>
+                <td colspan="2" class="p-4 md:p-6 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td>
+                           <td class="p-4 md:p-6 text-right text-rose-800">${formatMoney(totalAct.expense)}</td>
+                <td class="p-4 md:p-6 text-right text-rose-800"></td>
             </tr>`;
 
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
@@ -654,9 +654,9 @@
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
 
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg">
-                <td colspan="2" class="p-3 md:p-4 text-right">${finalLabel}</td>
-                <td class="p-3 md:p-4 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
-                <td class="p-3 md:p-4 text-right whitespace-nowrap"></td>
+                <td colspan="2" class="p-4 md:p-6 text-right">${finalLabel}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td>
+                <td class="p-4 md:p-6 text-right whitespace-nowrap"></td>
             </tr>`;
         }
 
