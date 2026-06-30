@@ -178,8 +178,8 @@
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">รายงานรายละเอียดงบประมาณ</h2>
                             <p class="text-slate-500 font-medium text-xs md:text-sm mt-1">อ้างอิงผังรายการรับ-จ่าย โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
                         </div>
-                        <button onclick="exportReport()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
-                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> ดาวน์โหลด Excel
+                        <button onclick="exportReport()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-black px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> ดาวน์โหลด Excel 🖥️
                         </button>
                     </div>
 
@@ -308,7 +308,7 @@
     </div> <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">สัญญายืมเงินทดรองจ่าย</h2>
-                    <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="flex-1 sm:flex-none bg-slate-800 text-white px-5 py-3 rounded-xl font-bold text-sm">Export</button><button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
+                    <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="flex-1 sm:flex-none bg-slate-800 text-black px-5 py-3 rounded-xl font-bold text-sm">ดาวน์โหลด Excel🖥️</button><button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
                 </div>
                 <div class="card p-4 bg-white border border-slate-200 flex flex-wrap gap-4 items-end">
                     <div class="relative flex-1 min-w-[200px]">
@@ -560,30 +560,66 @@
             }
         }
         // ================= RENDERING =================
-        function renderDashboard() {
-            const incEst = currentData.plans.filter(p=>p.type==='income').reduce((s,p)=>s+Number(p.estimated_amount),0);
-            const expEst = currentData.plans.filter(p=>p.type==='expense').reduce((s,p)=>s+Number(p.estimated_amount),0);
-            let incAct = currentData.txs.filter(t=>t.type==='income' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
-            const expAct = currentData.txs.filter(t=>t.type==='expense' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
-            
-            const incDiff = Math.max(0, incEst - incAct);
-            const expDiff = Math.max(0, expEst - expAct);
+function renderDashboard() {
+    const incEst = currentData.plans.filter(p=>p.type==='income').reduce((s,p)=>s+Number(p.estimated_amount),0);
+    const expEst = currentData.plans.filter(p=>p.type==='expense').reduce((s,p)=>s+Number(p.estimated_amount),0);
+    let incAct = currentData.txs.filter(t=>t.type==='income' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
+    const expAct = currentData.txs.filter(t=>t.type==='expense' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
+    
+    const incDiff = Math.max(0, incEst - incAct);
+    const expDiff = Math.max(0, expEst - expAct);
 
-            document.getElementById('exec-inc-est').innerText = '฿' + formatMoney(incEst);
-            document.getElementById('exec-inc-act').innerText = '฿' + formatMoney(incAct);
-            document.getElementById('exec-inc-diff').innerText = '฿' + formatMoney(incDiff);
-            document.getElementById('exec-inc-bar').style.width = `${incEst > 0 ? (incAct/incEst)*100 : 0}%`;
+    const incPct = incEst > 0 ? (incAct / incEst) * 100 : 0;
+    const expPct = expEst > 0 ? (expAct / expEst) * 100 : 0;
 
-            document.getElementById('exec-exp-est').innerText = '฿' + formatMoney(expEst);
-            document.getElementById('exec-exp-act').innerText = '฿' + formatMoney(expAct);
-            document.getElementById('exec-exp-diff').innerText = '฿' + formatMoney(expDiff);
-            document.getElementById('exec-exp-bar').style.width = `${expEst > 0 ? (expAct/expEst)*100 : 0}%`;
+    // ตัวเลขด้านบนคลีน ๆ พร้อมน้อง ๆ สัตว์น่ารักเหมือนเดิม
+    document.getElementById('exec-inc-est').innerText = '฿' + formatMoney(incEst) + ' 🐻';
+    document.getElementById('exec-inc-act').innerText = '฿' + formatMoney(incAct) + ' 🎉';
+    document.getElementById('exec-inc-diff').innerText = '฿' + formatMoney(incDiff) + ' 🐰';
+    
+    // [แก้ไข] ขยายขนาดแถบรายรับ และใส่ตัวเลขเปอร์เซ็นต์ไว้ตรงกลาง
+    const incBar = document.getElementById('exec-inc-bar');
+    incBar.style.width = `${Math.min(100, incPct)}%`;
+    incBar.innerText = incPct > 0 ? `${incPct.toFixed(1)}%` : ''; // ถ้าเป็น 0% ไม่ต้องแสดงตัวหนังสือ
+    incBar.className = "bg-emerald-600 h-full rounded-full transition-all duration-1000 flex items-center justify-center text-white text-[11px] font-black";
+    if (incBar.parentElement) {
+        incBar.parentElement.className = "w-full bg-slate-100 h-5 rounded-full overflow-hidden shadow-inner";
+    }
 
-            if(charts.inc) charts.inc.destroy(); if(charts.exp) charts.exp.destroy();
-            Chart.defaults.font.family = 'Sarabun'; Chart.defaults.font.size = 14;
-            charts.inc = new Chart(document.getElementById('chartIncome').getContext('2d'), { type: 'doughnut', data: { labels: ['รับจริงแล้ว', 'ค้างรับตามเป้า'], datasets: [{ data: [incAct, incDiff], backgroundColor: ['#059669', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } });
-            charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { type: 'doughnut', data: { labels: ['จ่ายจริงแล้ว', 'งบเหลือเบิก'], datasets: [{ data: [expAct, expDiff], backgroundColor: ['#9F1239', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] }, options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } });
-        }
+    document.getElementById('exec-exp-est').innerText = '฿' + formatMoney(expEst) + ' 🐼';
+    document.getElementById('exec-exp-act').innerText = '฿' + formatMoney(expAct) + ' 💸';
+    document.getElementById('exec-exp-diff').innerText = '฿' + formatMoney(expDiff) + ' 🐱';
+    
+    // [แก้ไข] ขยายขนาดแถบรายจ่าย และใส่ตัวเลขเปอร์เซ็นต์ไว้ตรงกลาง
+    const expBar = document.getElementById('exec-exp-bar');
+    expBar.style.width = `${Math.min(100, expPct)}%`;
+    expBar.innerText = expPct > 0 ? `${expPct.toFixed(1)}%` : ''; // ถ้าเป็น 0% ไม่ต้องแสดงตัวหนังสือ
+    expBar.className = "bg-rose-800 h-full rounded-full transition-all duration-1000 flex items-center justify-center text-white text-[11px] font-black";
+    if (expBar.parentElement) {
+        expBar.parentElement.className = "w-full bg-slate-100 h-5 rounded-full overflow-hidden shadow-inner";
+    }
+
+    if(charts.inc) charts.inc.destroy(); if(charts.exp) charts.exp.destroy();
+    Chart.defaults.font.family = 'Sarabun'; Chart.defaults.font.size = 14;
+    
+    charts.inc = new Chart(document.getElementById('chartIncome').getContext('2d'), { 
+        type: 'doughnut', 
+        data: { 
+            labels: [`รับจริงแล้ว (${incPct.toFixed(1)}%)`, `ค้างรับตามเป้า (${Math.max(0, 100 - incPct).toFixed(1)}%)`], 
+            datasets: [{ data: [incAct, incDiff], backgroundColor: ['#059669', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] 
+        }, 
+        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } 
+    });
+    
+    charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { 
+        type: 'doughnut', 
+        data: { 
+            labels: [`จ่ายจริงแล้ว (${expPct.toFixed(1)}%)`, `งบเหลือเบิก (${Math.max(0, 100 - expPct).toFixed(1)}%)`], 
+            datasets: [{ data: [expAct, expDiff], backgroundColor: ['#9F1239', '#F1F5F9'], hoverOffset: 4, borderWidth:0 }] 
+        }, 
+        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } 
+    });
+}
 
         function renderReport() {
             const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
@@ -689,24 +725,24 @@
         }
 
         // ================= STAFF ADMIN RENDERING =================
-        function renderPersonnel() {
-            const container = document.getElementById('card-personnel'); if(!container) return; container.innerHTML = '';
-            currentData.personnel.forEach(u => {
-                const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('personnel','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
-                container.innerHTML += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group">
-                    <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden">
-                        <i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-bold text-lg md:text-2xl text-slate-800">${u.name}</h3>
-                    </div>
-                    <div class="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
-                        <button type="button" onclick="editPersonnel('${u.id}')" class="p-2 md:p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5"></i></button>
-                        ${btnDelete}
-                    </div>
-                </div>`;
-            }); lucide.createIcons();
-        }
+       function renderPersonnel() {
+    const container = document.getElementById('card-personnel'); if(!container) return; container.innerHTML = '';
+    currentData.personnel.forEach(u => {
+        const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('personnel','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
+        container.innerHTML += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden">
+                <i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-bold text-base md:text-lg text-slate-800">${u.name}</h3>
+            </div>
+            <div class="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
+                <button type="button" onclick="editPersonnel('${u.id}')" class="p-2 md:p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5"></i></button>
+                ${btnDelete}
+            </div>
+        </div>`;
+    }); lucide.createIcons();
+}
 
         function renderPlans() {
             const tbl = document.getElementById('tbl-plans'); if(!tbl) return; tbl.innerHTML = '';
@@ -803,7 +839,7 @@ function renderAdvances() {
             let opts = currentData.plans.filter(p => p.type === (mode==='advance_clear'?'expense':mode)).map(p => `<option value="${p.id}" ${rowData?.plan_id===p.id?'selected':''}>[${p.plan_group}] ${p.name}</option>`).join('');
 
             if(mode === 'advance_clear') {
-                row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ยอดใช้ไปจริง (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+                row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ค่าใช้จ่าย (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             } else {
                 row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกรายการงบประมาณ</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-36"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ยอดเงิน (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm outline-none" value="${rowData?.amount||''}" required></div><div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">หมายเหตุเพิ่มเติม</label><input type="text" class="row-note w-full border p-2 rounded-xl text-sm outline-none" value="${rowData?.note||''}"></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             }
@@ -819,7 +855,106 @@ function renderAdvances() {
 
             if(mode === 'plan') {
                 f.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-4"><div><label class="font-bold text-sm mb-1 block">ประเภท</label><select id="f_type" class="border p-3 rounded-xl w-full font-bold"><option value="income" ${data?.type==='income'?'selected':''}>รายได้</option><option value="expense" ${data?.type==='expense'?'selected':''}>รายจ่าย</option></select></div><div><label class="font-bold text-sm mb-1 block">รหัส</label><input type="text" id="f_pcode" class="border p-3 rounded-xl w-full" value="${data?.code||''}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดใหญ่</label><input type="text" id="f_pgroup" class="border p-3 rounded-xl w-full font-bold" value="${data?.plan_group||''}" required></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดย่อย</label><input type="text" id="f_psub" class="border p-3 rounded-xl w-full" value="${data?.sub_category||'-'}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">ชื่อรายการ</label><input type="text" id="f_pname" class="border p-3 rounded-xl w-full font-extrabold text-base md:text-lg" value="${data?.name||''}" required></div><div><label class="font-bold text-sm mb-1 block">งบตั้งต้น</label><input type="number" id="f_pest" class="border p-3 rounded-xl w-full font-bold text-primary" value="${data?.estimated_amount||0}" required></div><div><label class="font-bold text-sm mb-1 block">Seq (ลำดับการแสดงผล)</label><input type="number" id="f_pseq" class="border p-3 rounded-xl w-full" value="${data?.seq||999}" required></div></div>`;
-            } else if(mode === 'income' || mode === 'expense') {
+            } else if(mode === 'advance_create') {
+    document.getElementById('modal-title').innerText = currentEditId ? 'แก้ไขสัญญายืมเงิน' : 'สร้างสัญญายืมเงิน';
+    
+    let userOpts = (currentData.personnel || []).map(u => {
+        const isSelected = data && data.user_id == u.id ? 'selected' : '';
+        return `<option value="${u.id}" ${isSelected}>${u.name}</option>`;
+    }).join('');
+
+    f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">วันที่ยืม</label>
+    <input type="date" id="f_adv_date" class="w-full p-3 outline-none font-bold" value="${data?.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]}" required>
+</div>
+
+<div class="border border-slate-200 rounded-xl shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block rounded-t-xl">ชื่อผู้ยืม</label>
+    <select id="f_adv_user" class="w-full p-3 outline-none text-sm">
+        <option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>
+        ${userOpts}
+    </select>
+</div>
+
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">เลขที่สัญญา</label>
+    <input type="text" id="f_adv_contract" class="w-full p-3 outline-none font-extrabold text-base md:text-lg" value="${data?.contract_no||''}" required>
+</div>
+
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อกิจกรรม</label>
+    <input type="text" id="f_adv_act" class="w-full p-3 outline-none" value="${data?.activity_name||''}" required>
+</div>
+
+<div class="border-2 border-rose-800 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2">
+    <label class="bg-rose-800 text-white px-4 py-2.5 font-bold text-sm block">ยอดยืมรวม (฿)</label>
+    <input type="number" id="f_adv_total" class="w-full p-4 bg-rose-50 outline-none font-black text-xl md:text-2xl text-rose-700" value="${data?.total_amount||''}" required>
+</div>
+</div>`;
+
+    setTimeout(() => {
+        const selectEl = document.getElementById('f_adv_user');
+        if (selectEl) {
+            choicesInstances.push(new Choices(selectEl, { 
+                searchEnabled: true, 
+                itemSelectText: '', 
+                noResultsText: 'ไม่พบข้อมูลผู้ยืม',
+                shouldSort: false
+            }));
+        }
+    }, 100);
+} else if(mode === 'advance_create') {
+    document.getElementById('modal-title').innerText = currentEditId ? 'แก้ไขสัญญายืมเงิน' : 'สร้างสัญญายืมเงิน';
+    
+    // เปลี่ยนจาก === เป็น == เพื่อให้รองรับการเทียบ String กับ Number และป้องกันระบบเออเร่อกรณีไม่มีข้อมูล
+    let userOpts = (currentData.personnel || []).map(u => {
+        const isSelected = data && data.user_id == u.id ? 'selected' : '';
+        return `<option value="${u.id}" ${isSelected}>${u.name}</option>`;
+    }).join('');
+
+    f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">วันที่ยืม</label>
+    <input type="date" id="f_adv_date" class="w-full p-3 outline-none font-bold" value="${data?.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]}" required>
+</div>
+
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อผู้ยืม</label>
+    <select id="f_adv_user" class="w-full p-3 outline-none text-sm">
+        <option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>
+        ${userOpts}
+    </select>
+</div>
+
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">เลขที่สัญญา</label>
+    <input type="text" id="f_adv_contract" class="w-full p-3 outline-none font-extrabold text-base md:text-lg" value="${data?.contract_no||''}" required>
+</div>
+
+<div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อกิจกรรม</label>
+    <input type="text" id="f_adv_act" class="w-full p-3 outline-none" value="${data?.activity_name||''}" required>
+</div>
+
+<div class="border-2 border-rose-800 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2">
+    <label class="bg-rose-800 text-white px-4 py-2.5 font-bold text-sm block">ยอดยืมรวม (฿)</label>
+    <input type="number" id="f_adv_total" class="w-full p-4 bg-rose-50 outline-none font-black text-xl md:text-2xl text-rose-700" value="${data?.total_amount||''}" required>
+</div>
+</div>`;
+
+    // เพิ่มเวลา Delay เล็กน้อยให้ตัวเลือก HTML Render เสร็จก่อน Choices.js จะจับไปทำ Dropdown ค้นหา
+    setTimeout(() => {
+        const selectEl = document.getElementById('f_adv_user');
+        if (selectEl) {
+            choicesInstances.push(new Choices(selectEl, { 
+                searchEnabled: true, 
+                itemSelectText: '', 
+                noResultsText: 'ไม่พบข้อมูลผู้ยืม' 
+            }));
+        }
+    }, 100);
+}else if(mode === 'income' || mode === 'expense') {
                 f.innerHTML = `<div class="mb-4 mt-6"><label class="font-bold text-sm mb-1 block">วันที่ทำรายการ</label><input type="date" id="f_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${data?.tx_date||new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div>${!data ? `<button type="button" onclick="addDynamicRow('${mode}')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มรายการรับ/จ่ายในบิลนี้</button>` : ''}`;
                 setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
             } else if(mode === 'advance_create') {
@@ -857,7 +992,7 @@ function renderAdvances() {
             } else if(mode === 'advance_clear') {
                 activeAdvanceData = currentData.advances.find(x => x.id === currentEditId);
                 document.getElementById('modal-title').innerText = 'บันทึกเคลียร์สัญญา : ' + activeAdvanceData.contract_no;
-                f.innerHTML = `<div class="bg-slate-900 text-white p-4 md:p-5 rounded-2xl mb-6 mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-base md:text-lg">${activeAdvanceData.personnel?.name} (${activeAdvanceData.activity_name})</p></div><div class="text-left md:text-right"><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-xl md:text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">เงินสดทอนคืน (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
+                f.innerHTML = `<div class="bg-slate-900 text-white p-4 md:p-5 rounded-2xl mb-6 mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-base md:text-lg">${activeAdvanceData.personnel?.name} (${activeAdvanceData.activity_name})</p></div><div class="text-left md:text-right"><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-xl md:text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">ยอดเงินคงเหลือ (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
                 setTimeout(() => addDynamicRow('advance_clear'), 50);
             } else if(mode === 'personnel') {
                 f.innerHTML = `<div class="space-y-4 mt-4 mb-4">
@@ -1046,9 +1181,33 @@ function renderAdvances() {
 
         async function updateStatus(table, id, status) { showLoader(); await supabaseClient.from(table).update({status}).eq('id', id); showToast('อนุมัติแล้ว'); await loadPrivateData(); hideLoader(); }
 
-        function exportData(table) {
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(currentData.advances.map(a => ({ 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': a.personnel?.name, 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดเคลียร์': a.cleared_amount }))), "Sheet1"); XLSX.writeFile(wb, `Advances.xlsx`);
-        }
+ function exportData(table) {
+    if (table === 'advances') {
+        // ทำการก๊อปปี้ข้อมูลและเรียงลำดับเลขที่สัญญาจากน้อยไปมากก่อนนำไปดึงออก Excel
+        const sortedAdvances = [...currentData.advances].sort((a, b) => 
+            (a.contract_no || "").localeCompare(b.contract_no || "", undefined, {numeric: true})
+        );
+
+        const exportList = sortedAdvances.map(a => {
+            // จับคู่หาชื่อบุคลากรจาก user_id ให้เหมือนกับที่แสดงบนหน้าเว็บ
+            const p = currentData.personnel.find(x => x.id == a.user_id);
+            const name = p ? p.name : "ไม่พบชื่อ";
+            
+            return { 
+                'วันที่': formatThaiDate(a.created_at), 
+                'สัญญา': a.contract_no, 
+                'ผู้ยืม': name, 
+                'กิจกรรม': a.activity_name, 
+                'ยอดยืม': a.total_amount, 
+                'ยอดเคลียร์': a.cleared_amount 
+            };
+        });
+
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportList), "Sheet1"); 
+        XLSX.writeFile(wb, `KTU_Advances_Report.xlsx`);
+    }
+}
 
         function exportFilteredTx(type, mode) {
             const pref = type === 'income' ? 'inc' : 'exp';
