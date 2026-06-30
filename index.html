@@ -178,7 +178,7 @@
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">รายงานรายละเอียดงบประมาณ</h2>
                             <p class="text-slate-500 font-medium text-xs md:text-sm mt-1">อ้างอิงผังรายการรับ-จ่าย โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
                         </div>
-                        <button onclick="exportReport()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-black px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
+                         <button onclick="exportReport()" class="w-full sm:w-auto bg-emerald-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
                             <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> ดาวน์โหลด Excel 🖥️
                         </button>
                     </div>
@@ -232,26 +232,48 @@
                         <div>
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">รายงานสัญญายืมเงินทดรองจ่าย</h2>
                             <p class="text-slate-500 font-medium text-xs md:text-sm mt-1">สรุปข้อมูลสัญญายืมเงิน สถานะการเคลียร์ และยอดคงเหลือ</p>
-                        </div>
-                        <button onclick="exportPublicAdvances()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
-                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-white"></i> ดาวน์โหลด Excel
-                        </button>
-                    </div>
+                        </div>                       
+					<button onclick="exportPublicAdvances()" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-white"></i> ดาวน์โหลด Excel🖥️
+        </button>
+    </div>
 
-                    <div class="card overflow-hidden border border-slate-200 w-full">
-                        <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
-                            <table class="w-full text-left border-collapse min-w-[900px] relative" id="pub-advance-table">
-                               <thead class="sticky top-0 z-40 shadow-md">
-   <tr class="border-b border-slate-300 text-slate-800 text-xs md:text-base whitespace-nowrap">
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4">วันที่ยืม</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4">เลขที่สัญญา</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4">บุคลากรผู้ยืม</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4">ชื่อโครงการ/กิจกรรม</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4 text-right">ยอดยืม (฿)</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4 text-right">ยอดเคลียร์ (฿)</th>
-        <th class="bg-slate-800 border-b border-slate-900 p-3 md:p-4 text-center">สถานะ</th>
-    </tr>
-</thead>
+    <div class="card p-4 mb-6 flex flex-col md:flex-row gap-4 bg-white border border-slate-200">
+        <div class="flex-1">
+            <label class="block text-sm font-bold text-slate-700 mb-2">ค้นหา สัญญา, ชื่อผู้ยืม, โครงการ</label>
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-4 top-3.5 text-slate-400 w-5 h-5"></i>
+                <input type="text" id="pub-adv-search" placeholder="พิมพ์คำที่ต้องการค้นหา..." class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-primary text-base font-medium transition" onkeyup="renderPublicAdvances()">
+            </div>
+        </div>
+        <div class="md:w-64">
+            <label class="block text-sm font-bold text-slate-700 mb-2">สถานะการเคลียร์เงิน</label>
+            <select id="pub-adv-status" class="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl outline-none focus:bg-white focus:border-primary text-base font-bold transition cursor-pointer" onchange="renderPublicAdvances()">
+                <option value="all">สถานะทั้งหมด</option>
+                <option value="pending">รอเคลียร์</option>
+                <option value="cleared">เคลียร์แล้ว</option>
+            </select>
+        </div>
+    </div>
+<div class="card overflow-hidden border border-slate-200 w-full">
+    <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+        <table class="w-full text-left border-collapse min-w-[900px] relative" id="pub-advance-table">
+            <thead class="sticky top-0 z-40 shadow-md">
+                <tr class="border-b border-slate-300 text-slate-800 text-xs md:text-base whitespace-nowrap">
+                    <th class="bg-white p-4 text-black p-3 md:p-4">วันที่ยืม</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4">เลขที่สัญญา</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4">บุคลากรผู้ยืม</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4">ชื่อโครงการ/กิจกรรม</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดยืม (฿)</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดเคลียร์ (฿)</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4 text-center">สถานะ</th>
+                </tr>
+            </thead>
+            <tbody id="pub-tbl-advance" class="divide-y divide-slate-100">
+                </tbody>
+        </table>
+    </div>
+</div>
                                 <tbody id="pub-tbl-advance" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
@@ -284,6 +306,9 @@
                         <button onclick="exportFilteredTx('income', 'month')" class="flex-1 sm:flex-none justify-center bg-slate-800 text-white text-xs px-4 py-3 rounded-xl font-bold flex items-center gap-1.5"><i data-lucide="calendar-range"></i> เดือน</button>
                     </div>
                 </div>
+				
+				
+				
                <div class="card overflow-hidden">
             <div class="w-full overflow-x-auto max-h-[70vh] overflow-y-auto relative">
                 <table class="w-full text-left min-w-[900px] border-collapse relative">
@@ -340,7 +365,10 @@
     </div> <div id="view-advance" class="app-view max-w-7xl mx-auto hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">สัญญายืมเงินทดรองจ่าย</h2>
-                    <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="flex-1 sm:flex-none bg-slate-800 text-black px-5 py-3 rounded-xl font-bold text-sm">ดาวน์โหลด Excel🖥️</button><button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
+                    <div class="flex gap-2 w-full sm:w-auto"><button onclick="exportData('advances')" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-white"></i> ดาวน์โหลด Excel🖥️
+        </button>
+					<button onclick="openForm('advance_create')" class="flex-1 sm:flex-none justify-center bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-1.5"><i data-lucide="plus"></i> สร้างสัญญาใหม่</button></div>
                 </div>
                 <div class="card p-4 bg-white border border-slate-200 flex flex-wrap gap-4 items-end">
                     <div class="relative flex-1 min-w-[200px]">
@@ -540,16 +568,17 @@
         }
 
         // ================= INIT =================
-  async function loadPublicData() {
+async function loadPublicData() {
     showLoader();
     try {
-        // เพิ่มการดึงข้อมูลตาราง personnel เข้ามาตรงนี้ด้วย
+        // [แก้ไข] ดึงข้อมูลมาให้ครบทุกตารางเพื่อใช้ในหน้าแดชบอร์ด
         const [rPlans, rTx, rAdv, rPersonnel] = await Promise.all([
             supabaseClient.from('budget_plans').select('*').order('seq'),
             supabaseClient.from('transactions').select(`*`).order('tx_date'),
             supabaseClient.from('cash_advances').select(`*`),
             supabaseClient.from('personnel').select('*') 
         ]);
+        
         currentData.plans = rPlans.data || [];
         currentData.txs = rTx.data || [];
         currentData.advances = rAdv.data || [];
@@ -557,7 +586,7 @@
         
         renderDashboard();
         renderReport();
-        renderPublicAdvances(); // สั่งให้วาดตารางสัญญายืมที่เราเพิ่งสร้าง
+        renderPublicAdvances(); // วาดตารางสัญญายืมเงินตอนเปิดหน้าเว็บครั้งแรก
     } catch (err) {
         console.error("Public Data Load Error:", err);
     } finally {
@@ -1258,20 +1287,56 @@ function renderAdvances() {
         function exportReport() {
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("report-table")), "Report"); XLSX.writeFile(wb, `KTU_Budget_Report.xlsx`);
         }
-		function renderPublicAdvances() {
+		window.renderPublicAdvances = function() {
             const tbl = document.getElementById('pub-tbl-advance');
             if (!tbl) return;
             tbl.innerHTML = '';
             
-            // เรียงลำดับเลขที่สัญญา
-            let sortedAdvances = [...currentData.advances].sort((a, b) => 
-                (a.contract_no || "").localeCompare(b.contract_no || "", undefined, {numeric: true})
+            // ดึงค่าจากกล่องค้นหาและสถานะ
+            const searchInput = document.getElementById('pub-adv-search');
+            const statusInput = document.getElementById('pub-adv-status');
+            
+            const fText = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const fStatus = statusInput ? statusInput.value : 'all';
+
+            // กรองข้อมูลตามที่พิมพ์
+            let filteredData = currentData.advances.filter(a => {
+                const p = currentData.personnel ? currentData.personnel.find(x => x.id == a.user_id) : null;
+                const name = p ? String(p.name).toLowerCase() : "";
+                
+                const contract = String(a.contract_no || "").toLowerCase();
+                const activity = String(a.activity_name || "").toLowerCase();
+                
+                const matchText = fText === '' || name.includes(fText) || contract.includes(fText) || activity.includes(fText);
+                
+                const total = Number(a.total_amount || 0);
+                const cleared = Number(a.cleared_amount || 0);
+                const bal = total - cleared;
+                
+                let statusMatch = true;
+                if (fStatus === 'cleared') statusMatch = (bal <= 0);
+                if (fStatus === 'pending') statusMatch = (bal > 0);
+                
+                return matchText && statusMatch;
+            });
+
+            // เรียงลำดับเลขสัญญา
+            filteredData.sort((a, b) => 
+                String(a.contract_no || "").localeCompare(String(b.contract_no || ""), undefined, {numeric: true})
             );
 
-            sortedAdvances.forEach(a => {
-                const p = currentData.personnel.find(x => x.id == a.user_id);
+            // ถ้าไม่เจอให้ขึ้นข้อความ
+            if (filteredData.length === 0) {
+                tbl.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium bg-slate-50"><i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-slate-400"></i>ไม่พบข้อมูลสัญญายืมเงินที่ค้นหาจ้า</td></tr>`;
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+
+            // วาดตาราง
+            filteredData.forEach(a => {
+                const p = currentData.personnel ? currentData.personnel.find(x => x.id == a.user_id) : null;
                 const name = p ? p.name : "ไม่พบชื่อ";
-                const bal = Number(a.total_amount) - Number(a.cleared_amount);
+                const bal = Number(a.total_amount || 0) - Number(a.cleared_amount || 0);
                 
                 tbl.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 text-sm md:text-base">
                     <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
@@ -1289,14 +1354,31 @@ function renderAdvances() {
                 </tr>`;
             });
             if(typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
+        };
         function exportPublicAdvances() {
-            const wb = XLSX.utils.book_new(); 
-            // ดึงข้อมูลจากตาราง pub-advance-table ออกมาเป็น Excel ตรงๆ เลย
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("pub-advance-table")), "Advances_Summary"); 
-            XLSX.writeFile(wb, `KTU_Public_Advances_Summary.xlsx`);
-        }
+    // 1. เช็คว่ามีข้อมูลไหม ถ้าไม่มีให้ลองดึงใหม่จาก currentData
+    if (!currentData.advances || currentData.advances.length === 0) {
+        showToast('กำลังเตรียมข้อมูล... โปรดรอสักครู่', 'error');
+        return;
+    }
+
+    // 2. ดึงตารางที่แสดงผลบนหน้าจอจริงๆ (ที่มีการกรองแล้ว)
+    const table = document.getElementById("pub-advance-table");
+    if (!table) return;
+    
+    // 3. ใช้ XLSX สร้างไฟล์จากตาราง HTML ที่เห็นอยู่
+    try {
+        const wb = XLSX.utils.book_new(); 
+        const ws = XLSX.utils.table_to_sheet(table);
+        
+        // จัดการเรื่องภาษาไทยใน Excel (ถ้ามีปัญหาอ่านไม่ออก)
+        XLSX.utils.book_append_sheet(wb, ws, "Advances_Report"); 
+        XLSX.writeFile(wb, `KTU_Advances_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('ดาวน์โหลดไฟล์เรียบร้อยแล้วจ้า!');
+    } catch (err) {
+        showToast('ดาวน์โหลดไม่สำเร็จ: ' + err.message, 'error');
+    }
+}
     </script>
 </body>
 </html>
