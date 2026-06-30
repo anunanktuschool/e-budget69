@@ -33,7 +33,23 @@
         .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         .card { background-color: #ffffff; border-radius: 1.5rem; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; }
         .card-exec { background: linear-gradient(135deg, #ffffff 0%, #F8FAFC 100%); border: 1px solid #E2E8F0; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        /* เปิดใช้งานสกอร์บาร์ฝั่งขวาและตกแต่งเป็นธีม Burgundy ของระบบ */
+main::-webkit-scrollbar, body::-webkit-scrollbar {
+    width: 10px !important;
+    display: block !important;
+}
+main::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
+    background: #F1F5F9 !important; 
+    border-radius: 10px;
+}
+main::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
+    background: #881337 !important; /* สี Burgundy */
+    border-radius: 10px;
+    border: 2px solid #F1F5F9;
+}
+main::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
+    background: #9F1239 !important; 
+}
         .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .spinner { border: 4px solid #F1F5F9; border-top: 4px solid #881337; border-radius: 50%; width: 56px; height: 56px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -47,9 +63,20 @@
         table th { font-size: 16px; font-weight: 700; color: #334155; }
         table td { font-size: 16px; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
-    </style>
+		/* สไตล์สำหรับปุ่มย่อ/ขยายเมนูด้านซ้าย */
+        .sidebar-collapsed { width: 4.5rem !important; }
+        .sidebar-collapsed .sidebar-text { display: none !important; }
+        .sidebar-collapsed p { display: none !important; }
+		/* สไตล์สำหรับระบบย่อ Sidebar */
+        .sidebar-collapsed { width: 4.5rem !important; }
+        .sidebar-collapsed .sidebar-text, 
+        .sidebar-collapsed .sidebar-desc,
+        .sidebar-collapsed .sidebar-header-text { display: none !important; }
+        .sidebar-collapsed .nav-item { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
+        .sidebar-collapsed .sidebar-header-box { justify-content: center !important; }
+		    </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col h-screen overflow-y-auto">
 
     <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
     <div id="toast-container"></div>
@@ -110,13 +137,20 @@
     <div class="flex-1 flex overflow-hidden relative">
         
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity"></div>
-        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 md:w-72 bg-white border-r border-slate-200 h-full shadow-2xl md:shadow-sm flex-col overflow-y-auto transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 hidden shrink-0">
+       <!-- แถบเมนูด้านซ้ายตัวใหม่ รองรับการย่อขยาย -->
+        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 h-full shadow-2xl md:shadow-sm flex flex-col transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 hidden shrink-0">
+            
+            <!-- ปุ่มกด ย่อ/ขยาย สำหรับหน้าจอคอม (Desktop) -->
+            <button id="btn-toggle-sidebar" type="button" class="hidden md:flex absolute -right-3.5 top-20 bg-primary text-white rounded-full p-1 shadow-md hover:bg-rose-950 transition-transform z-50">
+                <i data-lucide="chevron-left" id="toggle-icon" class="w-4 h-4"></i>
+            </button>
+
             <div class="p-4 flex justify-between items-center md:hidden border-b border-slate-100">
                 <span class="font-extrabold text-primary text-lg">เมนูระบบ</span>
                 <button onclick="toggleSidebar()" class="p-2 text-slate-500 bg-slate-100 rounded-full hover:text-rose-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <div class="p-4 md:p-6">
-                <p class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 px-3 hidden md:block">เมนูระบบหลังบ้าน</p>
+            <div class="p-4 md:p-6 flex-1 overflow-y-auto">
+                <p class="sidebar-text text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 px-3 hidden md:block">เมนูระบบหลังบ้าน</p>
                 <nav class="space-y-1.5" id="desktop-nav"></nav>
             </div>
         </aside>
@@ -551,21 +585,26 @@
             document.getElementById('btn-add-personnel').classList.toggle('hidden', !['Admin', 'Finance', 'Accounting'].includes(currentUser.role));
         }
 
-        function switchView(viewId) {
-            document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(el => { el.dataset.target === viewId ? el.classList.add('bg-rose-50', 'text-primary') : el.classList.remove('bg-rose-50', 'text-primary'); });
-            
-            if (window.innerWidth < 768 && currentUser) {
-                const sb = document.getElementById('admin-sidebar');
-                if(!sb.classList.contains('-translate-x-full')) {
-                    sb.classList.add('-translate-x-full');
-                    document.getElementById('sidebar-overlay').classList.add('hidden');
-                    setTimeout(() => sb.classList.add('hidden'), 300);
+       function switchView(viewId) {
+    document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`view-${viewId}`).classList.remove('hidden');
+    document.querySelectorAll('.nav-btn').forEach(el => { el.dataset.target === viewId ? el.classList.add('bg-rose-50', 'text-primary') : el.classList.remove('bg-rose-50', 'text-primary'); });
+    
+    if (window.innerWidth < 768 && currentUser) {
+        const sb = document.getElementById('admin-sidebar');
+        if(!sb.classList.contains('-translate-x-full')) {
+            sb.classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
+            // แก้ตรงนี้: เช็คอีกรอบให้ชัวร์ว่าถ้าเป็นจอมือถือจริง ๆ (< 768) ค่อยสั่งซ่อนเมนู
+            setTimeout(() => {
+                if(window.innerWidth < 768) {
+                    sb.classList.add('hidden');
                 }
-            }
-            if(viewId === 'public_home') { renderDashboard(); renderReport(); renderPublicAdvances(); }
+            }, 300);
         }
+    }
+    if(viewId === 'public_home') { renderDashboard(); renderReport(); renderPublicAdvances(); }
+}
 
         // ================= INIT =================
 async function loadPublicData() {
@@ -1379,6 +1418,27 @@ function renderAdvances() {
         showToast('ดาวน์โหลดไม่สำเร็จ: ' + err.message, 'error');
     }
 }
+// ฟังก์ชันสั่งให้เมนูด้านซ้าย หด หรือ ขยาย
+        document.getElementById('btn-toggle-sidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const icon = document.getElementById('toggle-icon');
+            
+            // ตรวจสอบว่าปัจจุบันเมนูกำลังเปิดกว้างอยู่หรือไม่
+            if (sidebar.classList.contains('w-64')) {
+                // เปลี่ยนเป็นขนาดกะทัดรัด (หดเมนู)
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('sidebar-collapsed');
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                // เปลี่ยนกลับมาเป็นขนาดกว้างปกติ (เปิดเมนู)
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('w-64');
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            
+            // รีเฟรชไอคอนลูกศรให้หันหัวไปตามทิศทางที่ถูกต้อง
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
     </script>
 </body>
 </html>
