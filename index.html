@@ -90,7 +90,7 @@
         <div class="flex items-center gap-4">
             <button id="btn-show-login" onclick="showLogin()" class="hidden md:inline-flex bg-white hover:bg-rose-50 text-primary border border-rose-200 hover:border-rose-300 px-6 py-2.5 rounded-full font-bold shadow-sm hover:shadow transition items-center gap-2.5 group">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span>เข้าสู่ระบบเจ้าหน้าที่</span>
+                <span>เฉพาะ บัญชี/การเงิน เข้าสู่ระบบ</span>
                 <i data-lucide="shield-check" class="w-4 h-4 text-rose-800 group-hover:scale-110 transition"></i>
             </button>
             
@@ -116,7 +116,7 @@
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h2 class="text-3xl font-extrabold text-slate-800">ลงชื่อเข้าใช้</h2>
-                    <p class="text-sm text-slate-400 font-medium mt-1">เฉพาะฝ่ายบริหารการเงินและบัญชี</p>
+                    <p class="text-sm text-slate-400 font-medium mt-1">เฉพาะการเงินและบัญชี</p>
                 </div>
                 <button onclick="hideLogin()" class="text-slate-400 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 rounded-full p-2.5 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -160,7 +160,7 @@
                         <div class="p-3 bg-primary text-white rounded-2xl shadow-md"><i data-lucide="bar-chart-3" class="w-7 h-7"></i></div>
                         <div>
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Executive Dashboard</h2>
-                            <p class="text-slate-500 font-medium text-xs md:text-sm">สรุปสถานะการเงินและงบประมาณ ประจำปีการศึกษา 2569</p>
+                            <p class="text-slate-500 font-medium text-xs md:text-sm">สรุปสถานะการเงินและงบประมาณ <br>ประจำปีการศึกษา 2569</br></p>
                         </div>
                     </div>
                     
@@ -646,9 +646,9 @@
             const incPct = incEst > 0 ? (incAct / incEst) * 100 : 0;
             const expPct = expEst > 0 ? (expAct / expEst) * 100 : 0;
 
-            document.getElementById('exec-inc-est').innerText = '฿' + formatMoney(incEst) + ' 🐻';
-            document.getElementById('exec-inc-act').innerText = '฿' + formatMoney(incAct) + ' 🎉';
-            document.getElementById('exec-inc-diff').innerText = '฿' + formatMoney(incDiff) + ' 🐰';
+            document.getElementById('exec-inc-est').innerText = '฿' + formatMoney(incEst+10);
+            document.getElementById('exec-inc-act').innerText = '฿' + formatMoney(incAct);
+            document.getElementById('exec-inc-diff').innerText = '฿' + formatMoney(incDiff);
             
             const incBar = document.getElementById('exec-inc-bar');
             incBar.style.width = `${Math.min(100, incPct)}%`;
@@ -656,9 +656,9 @@
             incBar.className = "bg-emerald-600 h-full rounded-full transition-all duration-1000 flex items-center justify-center text-white text-[11px] font-black";
             if (incBar.parentElement) incBar.parentElement.className = "w-full bg-slate-100 h-5 rounded-full overflow-hidden shadow-inner";
 
-            document.getElementById('exec-exp-est').innerText = '฿' + formatMoney(expEst) + ' 🐼';
-            document.getElementById('exec-exp-act').innerText = '฿' + formatMoney(expAct) + ' 💸';
-            document.getElementById('exec-exp-diff').innerText = '฿' + formatMoney(expDiff) + ' 🐱';
+            document.getElementById('exec-exp-est').innerText = '฿' + formatMoney(expEst);
+            document.getElementById('exec-exp-act').innerText = '฿' + formatMoney(expAct);
+            document.getElementById('exec-exp-diff').innerText = '฿' + formatMoney(expDiff);
             
             const expBar = document.getElementById('exec-exp-bar');
             expBar.style.width = `${Math.min(100, expPct)}%`;
