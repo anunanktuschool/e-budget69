@@ -34,7 +34,6 @@
         .card { background-color: #ffffff; border-radius: 1.5rem; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; }
         .card-exec { background: linear-gradient(135deg, #ffffff 0%, #F8FAFC 100%); border: 1px solid #E2E8F0; }
         
-        /* แก้ไขสไตล์สกอร์บาร์ด้านข้างให้ขึ้นโชว์แบบสวยงามไม่ค้าง */
         main::-webkit-scrollbar, body::-webkit-scrollbar {
             width: 10px !important; display: block !important;
         }
@@ -60,7 +59,6 @@
         table td { font-size: 16px; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
 
-        /* สไตล์เสริมสำหรับคำสั่งย่อ/ขยายเมนูด้านซ้าย */
         .sidebar-mini { width: 4.5rem !important; }
         .sidebar-mini .sidebar-text { display: none !important; }
         .sidebar-mini #desktop-nav button { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
@@ -568,7 +566,6 @@
             document.getElementById('btn-add-personnel').classList.toggle('hidden', !['Admin', 'Finance', 'Accounting'].includes(currentUser.role));
         }
 
-        // แก้ไขฟังก์ชันสลับหน้าไม่ให้ไปแอบสั่งซ่อนเมนูหลุดฝั่งคอมพิวเตอร์
         function switchView(viewId) {
             document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
@@ -585,8 +582,7 @@
                     }, 300);
                 }
             }
-            if(viewId === 'public_home') { renderDashboard();
-            renderReport(); renderPublicAdvances(); }
+            if(viewId === 'public_home') { renderDashboard(); renderReport(); renderPublicAdvances(); }
         }
 
         // ================= DATA LOADING =================
@@ -611,6 +607,7 @@
             }
         }
         window.onload = loadPublicData;
+        
         async function loadPrivateData() {
             showLoader();
             try {
@@ -685,7 +682,6 @@
 
         function renderReport() {
             const tbl = document.getElementById('tbl-report');
-            tbl.innerHTML = '';
             const search = document.getElementById('pub-search').value.toLowerCase();
             const monthSelect = document.getElementById('pub-month');
             const selMonth = monthSelect.value;
@@ -696,6 +692,7 @@
                 monthLabel = `เดือน${parts[0]} ${parts[1]}`;
             }
 
+            let htmlString = '';
             let totalEst = { income: 0, expense: 0 };
             let totalAct = { income: 0, expense: 0 };
 
@@ -709,13 +706,13 @@
                 const groups = [...new Set(plans.map(p => p.plan_group))];
 
                 groups.forEach(gName => {
-                    tbl.innerHTML += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
+                    htmlString += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
                     let gEst = 0, gAct = 0;
                     const gPlans = plans.filter(p => p.plan_group === gName);
                     const subs = [...new Set(gPlans.map(p => p.sub_category))];
                     
                     subs.forEach(sName => {
-                        if(sName && sName !== '-') tbl.innerHTML += `<tr><td colspan="5" class="p-2 pl-4 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
+                        if(sName && sName !== '-') htmlString += `<tr><td colspan="5" class="p-2 pl-4 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
                         gPlans.filter(p => p.sub_category === sName).forEach(p => {
                             const txs = currentData.txs.filter(t => {
                                 if(t.plan_id !== p.id || t.status !== 'approved') return false;
@@ -726,7 +723,7 @@
                             const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
                             const est = Number(p.estimated_amount);
                             gEst += est; gAct += actual;
-                            tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-base">
+                            htmlString += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-base">
                                 <td class="p-3 md:p-4 md:pl-6 text-slate-500 font-medium align-top whitespace-nowrap">${p.code||''}</td>
                                 <td class="p-3 md:p-4 font-medium text-slate-700 align-top leading-tight min-w-[200px]">${p.name}</td>
                                 <td class="p-3 md:p-4 text-right align-top whitespace-nowrap">${est>0?formatMoney(est):'-'}</td>
@@ -735,7 +732,7 @@
                             </tr>`;
                         });
                     });
-                    tbl.innerHTML += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-xs md:text-base">
+                    htmlString += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-xs md:text-base">
                         <td colspan="2" class="p-3 md:p-4 text-right">รวม ${gName}</td>
                         <td class="p-3 md:p-4 text-right whitespace-nowrap">${formatMoney(gEst)}</td>
                         <td class="p-3 md:p-4 text-right ${tColorHex} whitespace-nowrap">${formatMoney(gAct)}</td>
@@ -744,7 +741,7 @@
                     grandEst += gEst; grandAct += gAct;
                 });
                 
-                tbl.innerHTML += `<tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl border-b-8 border-white">
+                htmlString += `<tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl border-b-8 border-white">
                     <td colspan="2" class="p-3 md:p-5 text-right">รวม${tName}ทั้งสิ้น</td>
                     <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandEst)}</td>
                     <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandAct)}</td>
@@ -755,28 +752,35 @@
             });
 
             let netAct = totalAct.income - totalAct.expense;
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td><td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
-            tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td><td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
+            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td><td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
+            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td><td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
-            tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg"><td colspan="3" class="p-4 md:p-6 text-right">${monthLabel} : ${statusText} (คงเหลือ)</td><td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td></tr>`;
+            htmlString += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg"><td colspan="3" class="p-4 md:p-6 text-right">${monthLabel} : ${statusText} (คงเหลือ)</td><td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td></tr>`;
+            
+            tbl.innerHTML = htmlString;
         }
 
         function renderPersonnel() {
             const container = document.getElementById('card-personnel');
-            if(!container) return; container.innerHTML = '';
+            if(!container) return; 
+            let htmlString = '';
             currentData.personnel.forEach(u => {
                 const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('personnel','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
-                container.innerHTML += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group"><div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden"><i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i></div><div class="flex-1"><h3 class="font-bold text-base md:text-lg text-slate-800">${u.name}</h3></div><div class="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition"><button type="button" onclick="editPersonnel('${u.id}')" class="p-2 md:p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5"></i></button>${btnDelete}</div></div>`;
-            }); lucide.createIcons();
+                htmlString += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group"><div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden"><i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i></div><div class="flex-1"><h3 class="font-bold text-base md:text-lg text-slate-800">${u.name}</h3></div><div class="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition"><button type="button" onclick="editPersonnel('${u.id}')" class="p-2 md:p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5"></i></button>${btnDelete}</div></div>`;
+            }); 
+            container.innerHTML = htmlString;
+            lucide.createIcons();
         }
 
         function renderPlans() {
             const tbl = document.getElementById('tbl-plans');
-            if(!tbl) return; tbl.innerHTML = '';
+            if(!tbl) return; 
+            let htmlString = '';
             currentData.plans.forEach(p => {
-                tbl.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-3 md:p-4">${p.seq}</td><td class="p-3 md:p-4"><span class="${p.type==='income'?'text-emerald-700 bg-emerald-100':'text-rose-700 bg-rose-100'} px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-bold">${p.type==='income'?'รายได้':'รายจ่าย'}</span></td><td class="p-3 md:p-4 font-medium text-slate-600 truncate max-w-[100px] md:max-w-[150px]">${p.plan_group}</td><td class="p-3 md:p-4 text-slate-500 truncate max-w-[100px] md:max-w-[150px]">${p.sub_category||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-500">${p.code||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-800 max-w-[200px] md:max-w-none whitespace-normal">${p.name}</td><td class="p-3 md:p-4 text-right font-medium whitespace-nowrap">${formatMoney(p.estimated_amount)}</td><td class="p-3 md:p-4 text-center whitespace-nowrap"><button onclick="editPlan('${p.id}')" class="text-blue-600 bg-blue-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-blue-100 font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('budget_plans','${p.id}')" class="text-rose-600 bg-rose-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-rose-100 font-bold">ลบ</button></td></tr>`;
+                htmlString += `<tr class="hover:bg-slate-50 transition"><td class="p-3 md:p-4">${p.seq}</td><td class="p-3 md:p-4"><span class="${p.type==='income'?'text-emerald-700 bg-emerald-100':'text-rose-700 bg-rose-100'} px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-bold">${p.type==='income'?'รายได้':'รายจ่าย'}</span></td><td class="p-3 md:p-4 font-medium text-slate-600 truncate max-w-[100px] md:max-w-[150px]">${p.plan_group}</td><td class="p-3 md:p-4 text-slate-500 truncate max-w-[100px] md:max-w-[150px]">${p.sub_category||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-500">${p.code||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-800 max-w-[200px] md:max-w-none whitespace-normal">${p.name}</td><td class="p-3 md:p-4 text-right font-medium whitespace-nowrap">${formatMoney(p.estimated_amount)}</td><td class="p-3 md:p-4 text-center whitespace-nowrap"><button onclick="editPlan('${p.id}')" class="text-blue-600 bg-blue-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-blue-100 font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('budget_plans','${p.id}')" class="text-rose-600 bg-rose-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-rose-100 font-bold">ลบ</button></td></tr>`;
             });
+            tbl.innerHTML = htmlString;
         }
 
         function renderTx(type) {
@@ -785,25 +789,31 @@
             const fMonth = document.getElementById(`filter-${pref}-month`)?.value;
             const fText = document.getElementById(`filter-${pref}-text`)?.value.toLowerCase();
             const fStatus = document.getElementById(`filter-${pref}-status`)?.value;
-            const tbl = document.getElementById(`tbl-${type}`); if(!tbl) return; tbl.innerHTML = '';
+            const tbl = document.getElementById(`tbl-${type}`); if(!tbl) return; 
             
+            let htmlString = '';
             const list = currentData.txs.filter(t => {
                 if(t.type !== type) return false;
+                if (type === 'expense' && t.note && t.note.includes('เคลียร์สัญญายืม')) return false;
                 if(fDate && t.tx_date !== fDate) return false;
                 if(fMonth && !t.tx_date.startsWith(fMonth)) return false;
                 if(fText && !t.budget_plans?.name?.toLowerCase().includes(fText) && !t.note?.toLowerCase().includes(fText)) return false;
                 if(fStatus && fStatus !== 'all' && t.status !== fStatus) return false;
                 return true;
             });
+
             list.forEach(t => {
                 const btnApprove = (currentUser.role === 'Admin' || currentUser.role === 'Accounting') && t.status === 'pending' ? `<button onclick="updateStatus('transactions','${t.id}','approved')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2 mb-1 md:mb-0">อนุมัติ</button>` : '';
-                tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(t.tx_date)}</td><td class="p-3 md:p-4 font-bold text-slate-800 whitespace-normal max-w-[200px] md:max-w-none">${t.budget_plans?.name || '-'}</td><td class="p-3 md:p-4 text-right font-extrabold text-lg md:text-xl ${type==='income'?'text-emerald-700':'text-rose-700'} whitespace-nowrap">${formatMoney(t.amount)}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[150px] md:max-w-none">${t.note||'-'}</td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${t.status==='approved'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${t.status==='approved'?'อนุมัติแล้ว':'รออนุมัติ'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnApprove}<button onclick="editTx('${t.id}')" class="text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('transactions','${t.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
+                htmlString += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(t.tx_date)}</td><td class="p-3 md:p-4 font-bold text-slate-800 whitespace-normal max-w-[200px] md:max-w-none">${t.budget_plans?.name || '-'}</td><td class="p-3 md:p-4 text-right font-extrabold text-lg md:text-xl ${type==='income'?'text-emerald-700':'text-rose-700'} whitespace-nowrap">${formatMoney(t.amount)}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[150px] md:max-w-none">${t.note||'-'}</td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${t.status==='approved'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${t.status==='approved'?'อนุมัติแล้ว':'รออนุมัติ'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnApprove}<button onclick="editTx('${t.id}')" class="text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('transactions','${t.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
             });
+            tbl.innerHTML = htmlString;
         }
 
         function renderAdvances() {
             const tbl = document.getElementById('tbl-advance');
-            if (!tbl) return; tbl.innerHTML = '';
+            if (!tbl) return; 
+            
+            let htmlString = '';
             const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
             const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
             let filteredData = currentData.advances.filter(a => {
@@ -818,6 +828,7 @@
             });
 
             filteredData.sort((a, b) => (a.contract_no || "").localeCompare(b.contract_no || "", undefined, {numeric: true}));
+            
             filteredData.forEach(a => {
                 const p = currentData.personnel.find(x => x.id == a.user_id);
                 const name = p ? p.name : "ไม่พบชื่อ";
@@ -826,7 +837,7 @@
                 const actualUsed = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${a.contract_no}`).reduce((sum, t) => sum + Number(t.amount), 0);
                 const returnAmount = Number(a.cleared_amount) - actualUsed;
 
-                tbl.innerHTML += `<tr class="border-b hover:bg-slate-50 transition text-sm md:text-base">
+                htmlString += `<tr class="border-b hover:bg-slate-50 transition text-sm md:text-base">
                     <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
                     <td class="p-3 md:p-4 font-bold text-primary whitespace-nowrap">${a.contract_no || ''}</td>
                     <td class="p-3 md:p-4 whitespace-nowrap">${name}</td>
@@ -835,14 +846,20 @@
                     <td class="p-3 md:p-4 text-right font-extrabold text-rose-700 whitespace-nowrap">${formatMoney(actualUsed)}</td>
                     <td class="p-3 md:p-4 text-right font-extrabold text-emerald-700 whitespace-nowrap">${formatMoney(returnAmount)}</td>                       
                     <td class="p-3 md:p-4 whitespace-nowrap text-center">${bal <= 0 ? `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-emerald-100 text-emerald-800 cursor-default">เคลียร์แล้ว</span>` : `<button onclick="openForm('advance_clear', '${a.id}')" class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-amber-100 text-amber-800 hover:bg-amber-200 hover:scale-105 transition shadow-sm cursor-pointer">รอเคลียร์</button>`}</td>
-                    <td class="p-3 md:p-4 text-center whitespace-nowrap"><button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl font-bold mr-1 transition">แก้ไข</button><button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">ลบ</button></td>
+                    <td class="p-3 md:p-4 text-center whitespace-nowrap">
+                        <button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, cleared_amount: ${a.cleared_amount || 0}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl font-bold mr-1 transition">แก้ไข</button>
+                        <button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">ลบ</button>
+                    </td>
                 </tr>`;
             });
+            tbl.innerHTML = htmlString;
         }
 
         function renderPublicAdvances() {
             const tbl = document.getElementById('pub-tbl-advance');
-            if (!tbl) return; tbl.innerHTML = '';
+            if (!tbl) return; 
+            
+            let htmlString = '';
             const fText = document.getElementById('pub-adv-search')?.value.toLowerCase().trim() || '';
             const fStatus = document.getElementById('pub-adv-status')?.value || 'all';
             let filteredData = currentData.advances.filter(a => {
@@ -870,7 +887,7 @@
                 const actualUsed = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${a.contract_no}`).reduce((sum, t) => sum + Number(t.amount), 0);
                 const returnAmount = Number(a.cleared_amount || 0) - actualUsed;
                 
-                tbl.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 text-sm md:text-base">
+                htmlString += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 text-sm md:text-base">
                     <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
                     <td class="p-3 md:p-4 font-bold text-primary whitespace-nowrap">${a.contract_no || ''}</td>
                     <td class="p-3 md:p-4 whitespace-nowrap">${name}</td>
@@ -881,6 +898,7 @@
                     <td class="p-3 md:p-4 whitespace-nowrap text-center">${bal <= 0 ? `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-emerald-100 text-emerald-800 cursor-default">เคลียร์แล้ว</span>` : `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-amber-100 text-amber-800 cursor-default">รอเคลียร์</span>`}</td>
                 </tr>`;
             });
+            tbl.innerHTML = htmlString;
             if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
@@ -897,7 +915,7 @@
             row.className = 'dynamic-row flex flex-col md:flex-row gap-4 items-end border border-slate-200 p-4 rounded-2xl bg-white shadow-sm mb-3 relative';
             let opts = currentData.plans.filter(p => p.type === (mode==='advance_clear'?'expense':mode)).map(p => `<option value="${p.id}" ${rowData?.plan_id===p.id?'selected':''}>[${p.plan_group}] ${p.name}</option>`).join('');
             if(mode === 'advance_clear') {
-                row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ค่าใช้จ่าย (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+                row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ค่าใช้จ่าย (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" value="${rowData?.amount||''}" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             } else {
                 row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกรายการงบประมาณ</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-36"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ยอดเงิน (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm outline-none" value="${rowData?.amount||''}" required></div><div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">หมายเหตุเพิ่มเติม</label><input type="text" class="row-note w-full border p-2 rounded-xl text-sm outline-none" value="${rowData?.note||''}"></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             }
@@ -919,18 +937,73 @@
             } else if(mode === 'advance_create') {
                 document.getElementById('modal-title').innerText = currentEditId ? 'แก้ไขสัญญายืมเงิน' : 'สร้างสัญญายืมเงิน';
                 let userOpts = (currentData.personnel || []).map(u => `<option value="${u.id}" ${data && data.user_id == u.id ? 'selected' : ''}>${u.name}</option>`).join('');
-                f.innerHTML = `<div class="space-y-4 mt-4 mb-4"><div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">วันที่ยืม</label><input type="date" id="f_adv_date" class="w-full p-3 outline-none font-bold" value="${data?.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]}" required></div><div class="border border-slate-200 rounded-xl shadow-sm"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block rounded-t-xl">ชื่อผู้ยืม</label><select id="f_adv_user" class="w-full p-3 outline-none text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div><div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="w-full p-3 outline-none font-extrabold text-base md:text-lg" value="${data?.contract_no||''}" required></div><div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อกิจกรรม</label><input type="text" id="f_adv_act" class="w-full p-3 outline-none" value="${data?.activity_name||''}" required></div><div class="border-2 border-rose-800 rounded-xl overflow-hidden shadow-sm w-full md:w-1/2"><label class="bg-rose-800 text-white px-4 py-2.5 font-bold text-sm block">ยอดยืมรวม (฿)</label><input type="number" id="f_adv_total" class="w-full p-4 bg-rose-50 outline-none font-black text-xl md:text-2xl text-rose-700" value="${data?.total_amount||''}" required></div></div>`;
+                
+                let editClearedHtml = '';
+                let existingTxs = [];
+                if (currentEditId) {
+                    existingTxs = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${data.contract_no}`);
+                    const actualUsed = existingTxs.reduce((sum, t) => sum + Number(t.amount), 0);
+                    let returnAmt = Number(data.cleared_amount || 0) - actualUsed;
+                    if(returnAmt < 0) returnAmt = 0; // ป้องกันตัวเลขติดลบ
+                    
+                    let clearDate = new Date().toISOString().split('T')[0];
+                    if (existingTxs.length > 0 && existingTxs[0].tx_date) {
+                        clearDate = existingTxs[0].tx_date;
+                    }
+
+                    // สร้าง UI สำหรับแก้ไขรายการเคลียร์แบบเจาะลึก
+                    editClearedHtml = `
+                    <div class="col-span-full w-full mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm">
+                        <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4 justify-between border-b border-slate-200 pb-4">
+                            <div class="flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-emerald-700"></i><h3 class="font-bold text-slate-800 text-base md:text-lg">แก้ไขรายละเอียดการเคลียร์เงิน (ตัดงบ)</h3></div>
+                            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
+                                <label class="text-xs font-bold text-slate-600 shrink-0">วันที่เคลียร์</label>
+                                <input type="date" id="f_adv_clear_date" class="border-none text-sm font-bold text-slate-800 outline-none w-full" value="${clearDate}">
+                            </div>
+                        </div>
+                        <div id="dynamic-rows-container"></div>
+                        <button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-4 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้จริง (ตัดงบ)</button>
+                        
+                        <div class="p-4 bg-emerald-100/50 border border-emerald-200 rounded-xl mt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <label class="font-bold text-sm text-emerald-900 block">ยอดเงินคงเหลือ (คืนโรงเรียน / ไม่ตัดงบ)</label>
+                                <span class="text-xs text-emerald-700">หากไม่ได้คืนเงินให้ใส่ 0</span>
+                            </div>
+                            <input type="number" step="0.01" id="f_adv_ret" class="border border-emerald-300 p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-48 bg-white outline-none md:text-right shadow-inner" value="${returnAmt > 0 ? returnAmt : 0}">
+                        </div>
+                    </div>
+                    `;
+                }
+
+                f.innerHTML = `
+                <div class="flex flex-wrap gap-4 mt-4 mb-4">
+                    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:flex-1"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">วันที่ยืม</label><input type="date" id="f_adv_date" class="w-full p-3 outline-none font-bold text-slate-700" value="${data?.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]}" required></div>
+                    <div class="border border-slate-200 rounded-xl shadow-sm w-full md:w-1/2"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block rounded-t-xl">ชื่อผู้ยืม</label><select id="f_adv_user" class="w-full p-3 outline-none text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div>
+                    <div class="w-full hidden md:block m-0 p-0 h-0"></div>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-1/3"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="w-full p-3 outline-none font-extrabold text-base md:text-lg text-primary" value="${data?.contract_no||''}" required></div>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full flex-1"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อโครงการ / กิจกรรม</label><input type="text" id="f_adv_act" class="w-full p-3 outline-none text-slate-700 font-medium" value="${data?.activity_name||''}" required></div>
+                    <div class="border-2 border-rose-800 rounded-xl overflow-hidden shadow-sm w-full md:w-1/3"><label class="bg-rose-800 text-white px-4 py-2.5 font-bold text-sm block">ยอดยืมรวม (฿)</label><input type="number" step="0.01" id="f_adv_total" class="w-full p-3 bg-rose-50 outline-none font-black text-xl text-rose-700" value="${data?.total_amount||''}" required></div>
+                    ${editClearedHtml}
+                </div>`;
+                
                 setTimeout(() => {
                     const selectEl = document.getElementById('f_adv_user');
                     if (selectEl) choicesInstances.push(new Choices(selectEl, { searchEnabled: true, itemSelectText: '', noResultsText: 'ไม่พบข้อมูลผู้ยืม', shouldSort: false }));
+                    
+                    if (currentEditId) {
+                        if (existingTxs.length > 0) {
+                            existingTxs.forEach(tx => addDynamicRow('advance_clear', tx));
+                        }
+                    }
                 }, 100);
+
             } else if(mode === 'income' || mode === 'expense') {
                 f.innerHTML = `<div class="mb-4 mt-6"><label class="font-bold text-sm mb-1 block">วันที่ทำรายการ</label><input type="date" id="f_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${data?.tx_date||new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div>${!data ? `<button type="button" onclick="addDynamicRow('${mode}')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มรายการรับ/จ่ายในบิลนี้</button>` : ''}`;
                 setTimeout(() => data ? addDynamicRow(mode, data) : addDynamicRow(mode), 50);
             } else if(mode === 'advance_clear') {
                 activeAdvanceData = currentData.advances.find(x => x.id === currentEditId);
                 document.getElementById('modal-title').innerText = 'บันทึกเคลียร์สัญญา : ' + activeAdvanceData.contract_no;
-                f.innerHTML = `<div class="bg-slate-900 text-white p-4 md:p-5 rounded-2xl mb-6 mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-base md:text-lg">${activeAdvanceData.personnel?.name} (${activeAdvanceData.activity_name})</p></div><div class="text-left md:text-right"><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-xl md:text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">ยอดเงินคงเหลือ (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
+                f.innerHTML = `<div class="bg-slate-900 text-white p-4 md:p-5 rounded-2xl mb-6 mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ผู้ยืม / กิจกรรม</p><p class="font-bold text-base md:text-lg">${activeAdvanceData.personnel?.name || 'ระบุไม่ได้'} (${activeAdvanceData.activity_name})</p></div><div class="text-left md:text-right"><p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">ยอดยืมรวม</p><p class="font-black text-xl md:text-2xl text-rose-400">${formatMoney(activeAdvanceData.total_amount)}</p></div></div><div class="mb-4"><label class="font-bold text-sm mb-1 block">วันที่เคลียร์บิล</label><input type="date" id="f_clear_date" class="border p-3 rounded-xl font-bold text-primary w-full md:w-1/3" value="${new Date().toISOString().split('T')[0]}" required></div><div id="dynamic-rows-container"></div><button type="button" onclick="addDynamicRow('advance_clear')" class="text-xs md:text-sm text-blue-700 bg-blue-100 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-200 mt-6 transition w-full justify-center border border-blue-200"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มกิจกรรมที่ใช้ (ตัดงบ)</button><div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl mt-4"><label class="font-bold text-sm text-emerald-900 block mb-1">ยอดเงินคงเหลือ (ไม่เข้างบ)</label><input type="number" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0"></div>`;
                 setTimeout(() => addDynamicRow('advance_clear'), 50);
             } else if(mode === 'personnel') {
                 f.innerHTML = `<div class="space-y-4 mt-4 mb-4"><div><label class="font-bold text-sm mb-1 block">ชื่อ-สกุล (ผู้ยืม / บุคลากร)</label><input type="text" id="f_name" class="border p-3 rounded-xl w-full" value="${data?.name||''}" required></div></div>`;
@@ -941,7 +1014,6 @@
        async function handleFormSubmit(e) {
             e.preventDefault();
             
-            // ป้องกันการกดปุ่มเบิ้ล (Double Submission Bug)
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
             if(submitBtn) {
@@ -984,10 +1056,68 @@
                 } else if(currentFormMode === 'advance_create') {
                     const userId = document.getElementById('f_adv_user').value;
                     if (!userId) { hideLoader(); return showToast('กรุณาเลือกผู้ยืม', 'error'); }
-                    const py = { user_id: userId, contract_no: document.getElementById('f_adv_contract').value, activity_name: document.getElementById('f_adv_act').value, total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, created_at: document.getElementById('f_adv_date').value };
+                    
+                    const py = { 
+                        user_id: userId, 
+                        contract_no: document.getElementById('f_adv_contract').value, 
+                        activity_name: document.getElementById('f_adv_act').value, 
+                        total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, 
+                        created_at: document.getElementById('f_adv_date').value 
+                    };
+                    
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId); dbError = error; } 
-                    else { py.cleared_amount = 0; py.status = 'pending'; const { error } = await supabaseClient.from('cash_advances').insert([py]); dbError = error; }
+                    
+                    if(currentEditId) { 
+                        // เมื่อเป็นการแก้ไขสัญญายืมเงิน (รวมถึงการแก้ไขรายละเอียดที่เคลียร์ไปแล้ว)
+                        let tExp = 0;
+                        const list = [];
+                        const rows = document.querySelectorAll('.dynamic-row');
+                        const cDate = document.getElementById('f_adv_clear_date')?.value || py.created_at;
+
+                        rows.forEach(r => {
+                            const pId = r.querySelector('.row-plan').value; 
+                            const amt = parseFloat(r.querySelector('.row-amount').value);
+                            if (pId && amt > 0) {
+                                tExp += amt;
+                                list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${py.contract_no}`, status: 'approved', created_by: currentUser.id });
+                            }
+                        });
+                        
+                        // ถ้าระบบมีกล่องแก้ไขข้อมูลเคลียร์ (f_adv_ret) ให้นำยอดนั้นมาคำนวณ
+                        let retInput = document.getElementById('f_adv_ret');
+                        let tRet = retInput ? (parseFloat(retInput.value) || 0) : null;
+                        
+                        // ดึงข้อมูลเดิมเพื่อใช้ลบ Transaction เก่า
+                        const originalAdv = currentData.advances.find(a => a.id === currentEditId);
+                        const oldNote = `เคลียร์สัญญายืม ${originalAdv.contract_no}`;
+
+                        if (tRet !== null) {
+                            py.cleared_amount = tExp + tRet;
+                            py.status = py.cleared_amount >= py.total_amount ? 'cleared' : 'pending';
+                        }
+                        
+                        // 1. อัพเดตข้อมูลสัญญาในตาราง cash_advances
+                        const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId); 
+                        dbError = error; 
+                        
+                        if (!dbError && tRet !== null) {
+                            // 2. ลบรายการหักงบ (Transaction) อันเก่าของสัญญานี้ทิ้ง
+                            const { error: delErr } = await supabaseClient.from('transactions').delete().eq('note', oldNote);
+                            if (delErr) console.error(delErr);
+                            
+                            // 3. สร้างรายการหักงบ (Transaction) อันใหม่ตามที่กรอก
+                            if (list.length > 0) {
+                                const { error: txErr } = await supabaseClient.from('transactions').insert(list);
+                                if (txErr) console.error(txErr);
+                            }
+                        }
+                    } 
+                    else { 
+                        py.cleared_amount = 0; 
+                        py.status = 'pending'; 
+                        const { error } = await supabaseClient.from('cash_advances').insert([py]); 
+                        dbError = error; 
+                    }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'advance_clear') {
                     let tExp = 0;
@@ -1014,7 +1144,6 @@
                 showToast('เกิดข้อผิดพลาด: ' + (err.message || 'บันทึกข้อมูลไม่สำเร็จ'), 'error');
                 console.error(err); 
             } finally { 
-                // คืนค่าปุ่มให้กลับมาเป็นปกติหลังบันทึกเสร็จ
                 if(submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
