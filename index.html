@@ -938,8 +938,18 @@
             document.getElementById('form-modal').classList.remove('hidden');
         }
 
-        async function handleFormSubmit(e) {
+       async function handleFormSubmit(e) {
             e.preventDefault();
+            
+            // ป้องกันการกดปุ่มเบิ้ล (Double Submission Bug)
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'กำลังบันทึก...';
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            }
+
             showLoader();
             try {
                 if(currentFormMode === 'plan') {
@@ -953,15 +963,12 @@
                         seq: parseInt(document.getElementById('f_pseq').value) || 999 
                     };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('budget_plans').update(py).eq('id', currentEditId); dbError = error;
-                    } 
-                    else { const { error } = await supabaseClient.from('budget_plans').insert([py]);
-                    dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('budget_plans').update(py).eq('id', currentEditId); dbError = error; } 
+                    else { const { error } = await supabaseClient.from('budget_plans').insert([py]); dbError = error; }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'income' || currentFormMode === 'expense') {
                     const rows = document.querySelectorAll('.dynamic-row');
-                    if(rows.length === 0) { hideLoader(); return showToast('เพิ่มอย่างน้อย 1 รายการ', 'error');
-                    }
+                    if(rows.length === 0) { hideLoader(); return showToast('เพิ่มอย่างน้อย 1 รายการ', 'error'); }
                     const list = [];
                     for (const r of rows) {
                         const planSelect = r.querySelector('.row-plan');
@@ -971,21 +978,16 @@
                     }
                     if(list.length === 0) throw new Error({message: 'กรุณากรอกข้อมูลให้ครบถ้วน'});
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('transactions').update(list[0]).eq('id', currentEditId); dbError = error;
-                    } 
-                    else { const { error } = await supabaseClient.from('transactions').insert(list);
-                    dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('transactions').update(list[0]).eq('id', currentEditId); dbError = error; } 
+                    else { const { error } = await supabaseClient.from('transactions').insert(list); dbError = error; }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'advance_create') {
                     const userId = document.getElementById('f_adv_user').value;
                     if (!userId) { hideLoader(); return showToast('กรุณาเลือกผู้ยืม', 'error'); }
                     const py = { user_id: userId, contract_no: document.getElementById('f_adv_contract').value, activity_name: document.getElementById('f_adv_act').value, total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, created_at: document.getElementById('f_adv_date').value };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId);
-                    dbError = error; } 
-                    else { py.cleared_amount = 0;
-                    py.status = 'pending'; const { error } = await supabaseClient.from('cash_advances').insert([py]); dbError = error;
-                    }
+                    if(currentEditId) { const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId); dbError = error; } 
+                    else { py.cleared_amount = 0; py.status = 'pending'; const { error } = await supabaseClient.from('cash_advances').insert([py]); dbError = error; }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'advance_clear') {
                     let tExp = 0;
@@ -995,28 +997,31 @@
                         if(pId && amt > 0) { tExp += amt; list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${activeAdvanceData.contract_no}`, status: 'approved', created_by: currentUser.id }); } 
                     });
                     const tRet = parseFloat(document.getElementById('f_clear_ret').value) || 0;
-                    if((tExp + tRet) <= 0) { hideLoader(); return showToast('ระบุยอดใช้จริง หรือยอดคืน', 'error');
-                    }
+                    if((tExp + tRet) <= 0) { hideLoader(); return showToast('ระบุยอดใช้จริง หรือยอดคืน', 'error'); }
                     const nClear = Number(activeAdvanceData.cleared_amount) + tExp + tRet;
-                    if(list.length > 0) { const { error: txErr } = await supabaseClient.from('transactions').insert(list); if(txErr) throw txErr;
-                    }
+                    if(list.length > 0) { const { error: txErr } = await supabaseClient.from('transactions').insert(list); if(txErr) throw txErr; }
                     const { error: advErr } = await supabaseClient.from('cash_advances').update({ cleared_amount: nClear, status: nClear >= Number(activeAdvanceData.total_amount) ? 'cleared' : 'pending' }).eq('id', activeAdvanceData.id);
                     if(advErr) throw advErr;
                 } else if(currentFormMode === 'personnel') {
                     const py = { name: document.getElementById('f_name').value };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('personnel').update(py).eq('id', currentEditId); dbError = error;
-                    } 
-                    else { const { error } = await supabaseClient.from('personnel').insert([py]);
-                    dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('personnel').update(py).eq('id', currentEditId); dbError = error; } 
+                    else { const { error } = await supabaseClient.from('personnel').insert([py]); dbError = error; }
                     if(dbError) throw dbError;
                 }
-                showToast('บันทึกเรียบร้อย'); closeForm(); currentUser ?
-                await loadPrivateData() : await loadPublicData();
+                showToast('บันทึกเรียบร้อย'); closeForm(); currentUser ? await loadPrivateData() : await loadPublicData();
             } catch(err) { 
                 showToast('เกิดข้อผิดพลาด: ' + (err.message || 'บันทึกข้อมูลไม่สำเร็จ'), 'error');
                 console.error(err); 
-            } finally { hideLoader(); }
+            } finally { 
+                // คืนค่าปุ่มให้กลับมาเป็นปกติหลังบันทึกเสร็จ
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                }
+                hideLoader(); 
+            }
         }
 
         function editPlan(id) { openForm('plan', currentData.plans.find(x => x.id === id));
