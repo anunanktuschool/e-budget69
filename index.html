@@ -36,19 +36,15 @@
         
         /* แก้ไขสไตล์สกอร์บาร์ด้านข้างให้ขึ้นโชว์แบบสวยงามไม่ค้าง */
         main::-webkit-scrollbar, body::-webkit-scrollbar {
-            width: 10px !important;
-            display: block !important;
+            width: 10px !important; display: block !important;
         }
         main::-webkit-scrollbar-track, body::-webkit-scrollbar-track {
-            background: #F1F5F9 !important; 
-        }
+            background: #F1F5F9 !important; }
         main::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb {
-            background: #CBD5E1 !important;
-            border-radius: 10px;
+            background: #CBD5E1 !important; border-radius: 10px;
         }
         main::-webkit-scrollbar-thumb:hover, body::-webkit-scrollbar-thumb:hover {
-            background: #881337 !important;
-        }
+            background: #881337 !important; }
 
         .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .spinner { border: 4px solid #F1F5F9; border-top: 4px solid #881337; border-radius: 50%; width: 56px; height: 56px; animation: spin 0.8s linear infinite; }
@@ -70,9 +66,7 @@
         .sidebar-mini #desktop-nav button { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-y-auto"> <!-- แก้ไขเป็น overflow-y-auto เพื่อให้สกอร์บาร์ทำงาน -->
-
-    <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
+<body class="flex flex-col h-screen overflow-y-auto"> <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
     <div id="toast-container"></div>
 
     <header class="glass-header w-full flex justify-between items-center px-4 md:px-6 py-3 md:py-4 z-40 shrink-0 gap-2 shadow-sm">
@@ -132,10 +126,8 @@
         
         <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity"></div>
         
-        <!-- แถบเมนูด้านซ้ายหลักตัวเดิม เพิ่มความสามารถรองรับการ ย่อ/ขยาย เมนู -->
         <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 h-full shadow-2xl md:shadow-sm flex flex-col overflow-visible transform -translate-x-full transition-all duration-300 md:relative md:translate-x-0 hidden shrink-0">
             
-            <!-- ปุ่มลูกศรสำหรับ กดพับย่อ/ขยาย แถบเมนูซ้ายมือ (แสดงเฉพาะบนคอมพิวเตอร์) -->
             <button id="btn-toggle-sidebar" type="button" class="hidden md:flex absolute -right-3.5 top-5 bg-primary text-white rounded-full p-1 shadow-md hover:bg-rose-950 transition-all z-50 focus:outline-none">
                 <i data-lucide="chevron-left" id="toggle-icon" class="w-4 h-4"></i>
             </button>
@@ -150,7 +142,6 @@
             </div>
         </aside>
 
-        <!-- ถอดคลาส hide-scroll ออกเพื่อให้สกอร์บาร์ขึ้นแสดงผล -->
         <main class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 md:p-8 relative pb-28 md:pb-8">
             
             <div id="view-public_home" class="app-view max-w-7xl mx-auto space-y-8 md:space-y-10 pb-12">
@@ -208,7 +199,7 @@
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">รายงานรายละเอียดงบประมาณ</h2>
                             <p class="text-slate-500 font-medium text-xs md:text-sm mt-1">อ้างอิงผังรายการรับ-จ่าย โรงเรียนอนุบาลแห่งมหาวิทยาลัยธรรมศาสตร์</p>
                         </div>
-                         <button onclick="exportReport()" class="w-full sm:w-auto bg-emerald-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
+                        <button onclick="exportReport()" class="w-full sm:w-auto bg-emerald-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold shadow-md transition flex items-center justify-center gap-2.5 shrink-0">
                             <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> ดาวน์โหลด Excel 🖥️
                         </button>
                     </div>
@@ -257,7 +248,7 @@
 </div>
         <hr class="border-slate-200 my-8">
 
-                <section class="pt-2 md:pt-6">
+        <section class="pt-2 md:pt-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
                             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">รายงานสัญญายืมเงินทดรองจ่าย</h2>
@@ -295,7 +286,8 @@
                     <th class="bg-white p-4 text-black p-3 md:p-4">บุคลากรผู้ยืม</th>
                     <th class="bg-white p-4 text-black p-3 md:p-4">ชื่อโครงการ/กิจกรรม</th>
                     <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดยืม (฿)</th>
-                    <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดเคลียร์ (฿)</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดใช้จริง (฿)</th>
+                    <th class="bg-white p-4 text-black p-3 md:p-4 text-right">ยอดคืนโรงเรียน (฿)</th>
                     <th class="bg-white p-4 text-black p-3 md:p-4 text-center">สถานะ</th>
                 </tr>
             </thead>
@@ -417,7 +409,8 @@
         <th class="bg-white p-4">บุคลากรผู้ยืม</th>
         <th class="bg-white p-4">ชื่อโครงการ/กิจกรรม</th>
         <th class="bg-white p-4 text-right">ยอดยืม (฿)</th>
-        <th class="bg-white p-4 text-right">ยอดเคลียร์ (฿)</th>
+        <th class="bg-white p-4 text-right">ยอดใช้จริง (฿)</th>
+        <th class="bg-white p-4 text-right">ยอดคืนโรงเรียน (฿)</th>
         <th class="bg-white p-4">สถานะ</th>
         <th class="bg-white p-4 text-center">จัดการ</th>
     </tr>
@@ -451,7 +444,7 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const SUPABASE_URL = 'https://nukauapszpzlofinoqyk.supabase.co'; 
+        const SUPABASE_URL = 'https://nukauapszpzlofinoqyk.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51a2F1YXBzenB6bG9maW5vcXlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NDMwMjMsImV4cCI6MjA5ODAxOTAyM30.g0KkmSXlz7gCMc0UNwNzd_qztmfLtGFJ04GNYS76U4U'; 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -468,14 +461,12 @@
         let activeAdvanceData = null; 
         let currentFormMode = '';
         let currentEditId = null;
-
         const navConfig = {
             'Admin': ['public_home', 'budget_plans', 'income', 'expense', 'advance', 'personnel'],
             'Finance': ['public_home', 'budget_plans', 'income', 'expense', 'advance', 'personnel'], 
             'Accounting': ['public_home', 'budget_plans', 'income', 'expense', 'advance', 'personnel'], 
             'Management': ['public_home']
         };
-
         const navLabels = {
             'public_home': { icon: 'layout-dashboard', label: 'หน้าแดชบอร์ดผู้บริหาร' },
             'budget_plans': { icon: 'list-tree', label: 'ผังโครงสร้างงบประมาณ' },
@@ -484,39 +475,44 @@
             'advance': { icon: 'wallet', label: 'สัญญายืมเงิน' },
             'personnel': { icon: 'users', label: 'ข้อมูลรายชื่อ (ผู้ยืม)' }
         };
-
         lucide.createIcons();
         const showLoader = () => document.getElementById('loader').style.display = 'flex';
         const hideLoader = () => document.getElementById('loader').style.display = 'none';
         const showToast = (msg, type='success') => {
-            const c = document.getElementById('toast-container'); const el = document.createElement('div'); el.className = `toast show ${type}`; el.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-5 h-5 shrink-0"></i><span>${msg}</span>`; c.appendChild(el); lucide.createIcons();
+            const c = document.getElementById('toast-container');
+            const el = document.createElement('div'); el.className = `toast show ${type}`; el.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-5 h-5 shrink-0"></i><span>${msg}</span>`; c.appendChild(el); lucide.createIcons();
             setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3500);
         };
         const formatMoney = (n) => Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const formatThaiDate = (iso) => { if(!iso) return ''; const d = new Date(iso); return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()+543}`; };
-
         // ================= AUTH =================
-        function showLogin() { document.getElementById('login-modal').classList.remove('hidden'); }
-        function hideLogin() { document.getElementById('login-modal').classList.add('hidden'); }
+        function showLogin() { document.getElementById('login-modal').classList.remove('hidden');
+        }
+        function hideLogin() { document.getElementById('login-modal').classList.add('hidden');
+        }
         async function handleLogin(e) {
-            e.preventDefault(); showLoader();
+            e.preventDefault();
+            showLoader();
             const { data } = await supabaseClient.from('users').select('*').eq('username', document.getElementById('username').value).eq('password', document.getElementById('password').value).single();
             hideLoader();
             if(data) { 
-                currentUser = data; hideLogin(); 
+                currentUser = data;
+                hideLogin(); 
                 document.getElementById('btn-show-login').classList.add('hidden');
                 document.getElementById('mobile-login-bar').classList.add('hidden'); 
                 
                 const prof = document.getElementById('user-profile'); prof.classList.remove('hidden'); prof.classList.add('flex');
                 
                 if(currentUser.role !== 'Management') { 
-                    const sb = document.getElementById('admin-sidebar'); 
+                    const sb = document.getElementById('admin-sidebar');
                     if(window.innerWidth >= 768) {
-                        sb.classList.remove('hidden'); sb.classList.add('md:flex'); 
+                        sb.classList.remove('hidden');
+                        sb.classList.add('md:flex'); 
                     }
                     document.getElementById('mobile-menu-btn').classList.remove('hidden');
                 }
-                setupNavigation(); loadPrivateData(); showToast('ยินดีต้อนรับ ' + currentUser.name); 
+                setupNavigation(); loadPrivateData();
+                showToast('ยินดีต้อนรับ ' + currentUser.name); 
 
                 if (window.innerWidth < 768 && currentUser.role !== 'Management') {
                     const sb = document.getElementById('admin-sidebar');
@@ -525,11 +521,13 @@
                     setTimeout(() => sb.classList.remove('-translate-x-full'), 10);
                     ov.classList.remove('hidden');
                 }
-            } else { showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); }
+            } else { showToast('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
         }
         function confirmLogout() {
             if(confirm('ยืนยันออกจากระบบจัดการ?')) { 
-                currentUser = null; document.getElementById('username').value = ''; document.getElementById('password').value = ''; 
+                currentUser = null;
+                document.getElementById('username').value = ''; document.getElementById('password').value = ''; 
                 document.getElementById('btn-show-login').classList.remove('hidden');
                 document.getElementById('mobile-login-bar').classList.remove('hidden'); 
                 
@@ -541,7 +539,7 @@
                 document.getElementById('mobile-menu-btn').classList.add('hidden');
                 document.getElementById('sidebar-overlay').classList.add('hidden');
 
-                switchView('public_home'); showToast('ออกจากระบบเรียบร้อย'); 
+                switchView('public_home'); showToast('ออกจากระบบเรียบร้อย');
             }
         }
 
@@ -561,7 +559,8 @@
         }
 
         function setupNavigation() {
-            document.getElementById('user-name').innerText = currentUser.name; document.getElementById('user-role').innerText = currentUser.position || currentUser.role;
+            document.getElementById('user-name').innerText = currentUser.name;
+            document.getElementById('user-role').innerText = currentUser.position || currentUser.role;
             const allowed = navConfig[currentUser.role] || [];
             const dNav = document.getElementById('desktop-nav'); dNav.innerHTML = '';
             allowed.forEach(k => { dNav.innerHTML += `<button onclick="switchView('${k}')" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-100 hover:text-primary transition font-bold text-base" data-target="${k}"><i data-lucide="${navLabels[k].icon}" class="w-5 h-5 text-slate-400"></i> <span class="sidebar-text">${navLabels[k].label}</span></button>`; });
@@ -574,7 +573,6 @@
             document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(el => { el.dataset.target === viewId ? el.classList.add('bg-rose-50', 'text-primary') : el.classList.remove('bg-rose-50', 'text-primary'); });
-            
             if (window.innerWidth < 768 && currentUser) {
                 const sb = document.getElementById('admin-sidebar');
                 if(!sb.classList.contains('-translate-x-full')) {
@@ -587,7 +585,8 @@
                     }, 300);
                 }
             }
-            if(viewId === 'public_home') { renderDashboard(); renderReport(); renderPublicAdvances(); }
+            if(viewId === 'public_home') { renderDashboard();
+            renderReport(); renderPublicAdvances(); }
         }
 
         // ================= DATA LOADING =================
@@ -603,7 +602,7 @@
                 currentData.plans = rPlans.data || [];
                 currentData.txs = rTx.data || [];
                 currentData.advances = rAdv.data || [];
-                currentData.personnel = rPersonnel.data || []; 
+                currentData.personnel = rPersonnel.data || [];
                 renderDashboard(); renderReport(); renderPublicAdvances();
             } catch (err) {
                 console.error("Public Data Load Error:", err);
@@ -612,7 +611,6 @@
             }
         }
         window.onload = loadPublicData;
-
         async function loadPrivateData() {
             showLoader();
             try {
@@ -640,7 +638,6 @@
             const expEst = currentData.plans.filter(p=>p.type==='expense').reduce((s,p)=>s+Number(p.estimated_amount),0);
             let incAct = currentData.txs.filter(t=>t.type==='income' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
             const expAct = currentData.txs.filter(t=>t.type==='expense' && t.status==='approved').reduce((s,t)=>s+Number(t.amount),0);
-            
             const incDiff = Math.max(0, incEst - incAct);
             const expDiff = Math.max(0, expEst - expAct);
             const incPct = incEst > 0 ? (incAct / incEst) * 100 : 0;
@@ -668,7 +665,6 @@
 
             if(charts.inc) charts.inc.destroy(); if(charts.exp) charts.exp.destroy();
             Chart.defaults.font.family = 'Sarabun'; Chart.defaults.font.size = 14;
-            
             charts.inc = new Chart(document.getElementById('chartIncome').getContext('2d'), { 
                 type: 'doughnut', 
                 data: { 
@@ -677,7 +673,6 @@
                 }, 
                 options: { cutout: '75%', plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false } 
             });
-            
             charts.exp = new Chart(document.getElementById('chartExpense').getContext('2d'), { 
                 type: 'doughnut', 
                 data: { 
@@ -689,12 +684,12 @@
         }
 
         function renderReport() {
-            const tbl = document.getElementById('tbl-report'); tbl.innerHTML = '';
+            const tbl = document.getElementById('tbl-report');
+            tbl.innerHTML = '';
             const search = document.getElementById('pub-search').value.toLowerCase();
             const monthSelect = document.getElementById('pub-month');
             const selMonth = monthSelect.value;
             const selMonthTextRaw = monthSelect.options[monthSelect.selectedIndex].text;
-            
             let monthLabel = "ตลอดปีการศึกษา";
             if (selMonth !== 'all') {
                 const parts = selMonthTextRaw.split(' ');
@@ -755,7 +750,6 @@
                     <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandAct)}</td>
                     <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">${formatMoney(grandEst-grandAct)}</td>
                 </tr>`;
-
                 totalEst[type] = grandEst;
                 totalAct[type] = grandAct;
             });
@@ -763,14 +757,14 @@
             let netAct = totalAct.income - totalAct.expense;
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td><td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
             tbl.innerHTML += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td><td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
-
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
             tbl.innerHTML += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg"><td colspan="3" class="p-4 md:p-6 text-right">${monthLabel} : ${statusText} (คงเหลือ)</td><td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td></tr>`;
         }
 
         function renderPersonnel() {
-            const container = document.getElementById('card-personnel'); if(!container) return; container.innerHTML = '';
+            const container = document.getElementById('card-personnel');
+            if(!container) return; container.innerHTML = '';
             currentData.personnel.forEach(u => {
                 const btnDelete = ['Admin', 'Finance', 'Accounting'].includes(currentUser.role) ? `<button type="button" onclick="deleteRow('personnel','${u.id}')" class="p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-rose-600 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : '';
                 container.innerHTML += `<div class="card p-4 md:p-6 flex items-center gap-4 md:gap-6 relative group"><div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 border-4 border-white shadow-md flex items-center justify-center shrink-0 overflow-hidden"><i data-lucide="user" class="text-slate-300 w-8 h-8 md:w-10 md:h-10"></i></div><div class="flex-1"><h3 class="font-bold text-base md:text-lg text-slate-800">${u.name}</h3></div><div class="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition"><button type="button" onclick="editPersonnel('${u.id}')" class="p-2 md:p-3 bg-slate-100 text-slate-500 rounded-full hover:bg-blue-600 hover:text-white transition shadow-sm"><i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5"></i></button>${btnDelete}</div></div>`;
@@ -778,7 +772,8 @@
         }
 
         function renderPlans() {
-            const tbl = document.getElementById('tbl-plans'); if(!tbl) return; tbl.innerHTML = '';
+            const tbl = document.getElementById('tbl-plans');
+            if(!tbl) return; tbl.innerHTML = '';
             currentData.plans.forEach(p => {
                 tbl.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-3 md:p-4">${p.seq}</td><td class="p-3 md:p-4"><span class="${p.type==='income'?'text-emerald-700 bg-emerald-100':'text-rose-700 bg-rose-100'} px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-bold">${p.type==='income'?'รายได้':'รายจ่าย'}</span></td><td class="p-3 md:p-4 font-medium text-slate-600 truncate max-w-[100px] md:max-w-[150px]">${p.plan_group}</td><td class="p-3 md:p-4 text-slate-500 truncate max-w-[100px] md:max-w-[150px]">${p.sub_category||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-500">${p.code||'-'}</td><td class="p-3 md:p-4 font-bold text-slate-800 max-w-[200px] md:max-w-none whitespace-normal">${p.name}</td><td class="p-3 md:p-4 text-right font-medium whitespace-nowrap">${formatMoney(p.estimated_amount)}</td><td class="p-3 md:p-4 text-center whitespace-nowrap"><button onclick="editPlan('${p.id}')" class="text-blue-600 bg-blue-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-blue-100 font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('budget_plans','${p.id}')" class="text-rose-600 bg-rose-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-rose-100 font-bold">ลบ</button></td></tr>`;
             });
@@ -800,7 +795,6 @@
                 if(fStatus && fStatus !== 'all' && t.status !== fStatus) return false;
                 return true;
             });
-
             list.forEach(t => {
                 const btnApprove = (currentUser.role === 'Admin' || currentUser.role === 'Accounting') && t.status === 'pending' ? `<button onclick="updateStatus('transactions','${t.id}','approved')" class="text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-xl font-bold mr-2 mb-1 md:mb-0">อนุมัติ</button>` : '';
                 tbl.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-3 md:p-4 font-bold whitespace-nowrap">${formatThaiDate(t.tx_date)}</td><td class="p-3 md:p-4 font-bold text-slate-800 whitespace-normal max-w-[200px] md:max-w-none">${t.budget_plans?.name || '-'}</td><td class="p-3 md:p-4 text-right font-extrabold text-lg md:text-xl ${type==='income'?'text-emerald-700':'text-rose-700'} whitespace-nowrap">${formatMoney(t.amount)}</td><td class="p-3 md:p-4 text-slate-500 whitespace-normal max-w-[150px] md:max-w-none">${t.note||'-'}</td><td class="p-3 md:p-4"><span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold ${t.status==='approved'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'} whitespace-nowrap">${t.status==='approved'?'อนุมัติแล้ว':'รออนุมัติ'}</span></td><td class="p-3 md:p-4 text-center whitespace-nowrap">${btnApprove}<button onclick="editTx('${t.id}')" class="text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl font-bold mr-1 md:mr-2">แก้ไข</button><button onclick="deleteRow('transactions','${t.id}')" class="text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl font-bold">ลบ</button></td></tr>`;
@@ -808,10 +802,10 @@
         }
 
         function renderAdvances() {
-            const tbl = document.getElementById('tbl-advance'); if (!tbl) return; tbl.innerHTML = '';
+            const tbl = document.getElementById('tbl-advance');
+            if (!tbl) return; tbl.innerHTML = '';
             const fText = document.getElementById('filter-adv-text')?.value.toLowerCase() || '';
             const fStatus = document.getElementById('filter-adv-status')?.value || 'all';
-
             let filteredData = currentData.advances.filter(a => {
                 const p = currentData.personnel.find(x => x.id == a.user_id);
                 const name = p ? p.name : "";
@@ -828,13 +822,18 @@
                 const p = currentData.personnel.find(x => x.id == a.user_id);
                 const name = p ? p.name : "ไม่พบชื่อ";
                 const bal = Number(a.total_amount) - Number(a.cleared_amount);
+                
+                const actualUsed = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${a.contract_no}`).reduce((sum, t) => sum + Number(t.amount), 0);
+                const returnAmount = Number(a.cleared_amount) - actualUsed;
+
                 tbl.innerHTML += `<tr class="border-b hover:bg-slate-50 transition text-sm md:text-base">
                     <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
                     <td class="p-3 md:p-4 font-bold text-primary whitespace-nowrap">${a.contract_no || ''}</td>
                     <td class="p-3 md:p-4 whitespace-nowrap">${name}</td>
                     <td class="p-3 md:p-4 whitespace-normal max-w-[200px]">${a.activity_name || ''}</td>
                     <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.total_amount)}</td>
-                    <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.cleared_amount)}</td>                       
+                    <td class="p-3 md:p-4 text-right font-extrabold text-rose-700 whitespace-nowrap">${formatMoney(actualUsed)}</td>
+                    <td class="p-3 md:p-4 text-right font-extrabold text-emerald-700 whitespace-nowrap">${formatMoney(returnAmount)}</td>                       
                     <td class="p-3 md:p-4 whitespace-nowrap text-center">${bal <= 0 ? `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-emerald-100 text-emerald-800 cursor-default">เคลียร์แล้ว</span>` : `<button onclick="openForm('advance_clear', '${a.id}')" class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-amber-100 text-amber-800 hover:bg-amber-200 hover:scale-105 transition shadow-sm cursor-pointer">รอเคลียร์</button>`}</td>
                     <td class="p-3 md:p-4 text-center whitespace-nowrap"><button onclick="openForm('advance_create', {id: '${a.id}', contract_no: '${a.contract_no}', activity_name: '${a.activity_name}', total_amount: ${a.total_amount}, user_id: '${a.user_id}', created_at: '${a.created_at}'})" class="text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl font-bold mr-1 transition">แก้ไข</button><button onclick="deleteRow('cash_advances','${a.id}')" class="text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">ลบ</button></td>
                 </tr>`;
@@ -842,10 +841,10 @@
         }
 
         function renderPublicAdvances() {
-            const tbl = document.getElementById('pub-tbl-advance'); if (!tbl) return; tbl.innerHTML = '';
+            const tbl = document.getElementById('pub-tbl-advance');
+            if (!tbl) return; tbl.innerHTML = '';
             const fText = document.getElementById('pub-adv-search')?.value.toLowerCase().trim() || '';
             const fStatus = document.getElementById('pub-adv-status')?.value || 'all';
-
             let filteredData = currentData.advances.filter(a => {
                 const p = currentData.personnel.find(x => x.id == a.user_id);
                 const name = p ? String(p.name).toLowerCase() : "";
@@ -856,10 +855,9 @@
                 let statusMatch = (fStatus === 'all') || (fStatus === 'cleared' && bal <= 0) || (fStatus === 'pending' && bal > 0);
                 return matchText && statusMatch;
             });
-
             filteredData.sort((a, b) => String(a.contract_no || "").localeCompare(String(b.contract_no || ""), undefined, {numeric: true}));
             if (filteredData.length === 0) {
-                tbl.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium bg-slate-50">ไม่พบข้อมูลสัญญายืมเงินที่ค้นหาจ้า</td></tr>`;
+                tbl.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500 font-medium bg-slate-50">ไม่พบข้อมูลสัญญายืมเงินที่ค้นหาจ้า</td></tr>`;
                 if(typeof lucide !== 'undefined') lucide.createIcons();
                 return;
             }
@@ -868,13 +866,18 @@
                 const p = currentData.personnel.find(x => x.id == a.user_id);
                 const name = p ? p.name : "ไม่พบชื่อ";
                 const bal = Number(a.total_amount || 0) - Number(a.cleared_amount || 0);
+
+                const actualUsed = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${a.contract_no}`).reduce((sum, t) => sum + Number(t.amount), 0);
+                const returnAmount = Number(a.cleared_amount || 0) - actualUsed;
+                
                 tbl.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-100 text-sm md:text-base">
                     <td class="p-3 md:p-4 whitespace-nowrap">${formatThaiDate(a.created_at)}</td>
                     <td class="p-3 md:p-4 font-bold text-primary whitespace-nowrap">${a.contract_no || ''}</td>
                     <td class="p-3 md:p-4 whitespace-nowrap">${name}</td>
                     <td class="p-3 md:p-4 whitespace-normal max-w-[200px]">${a.activity_name || ''}</td>
                     <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.total_amount)}</td>
-                    <td class="p-3 md:p-4 text-right font-extrabold text-slate-700 whitespace-nowrap">${formatMoney(a.cleared_amount)}</td>                       
+                    <td class="p-3 md:p-4 text-right font-extrabold text-rose-700 whitespace-nowrap">${formatMoney(actualUsed)}</td>
+                    <td class="p-3 md:p-4 text-right font-extrabold text-emerald-700 whitespace-nowrap">${formatMoney(returnAmount)}</td>                       
                     <td class="p-3 md:p-4 whitespace-nowrap text-center">${bal <= 0 ? `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-emerald-100 text-emerald-800 cursor-default">เคลียร์แล้ว</span>` : `<span class="px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold bg-amber-100 text-amber-800 cursor-default">รอเคลียร์</span>`}</td>
                 </tr>`;
             });
@@ -883,8 +886,9 @@
 
         // ================= DYNAMIC FORMS LOGIC =================
         function closeForm() { 
-            document.getElementById('form-modal').classList.add('hidden'); 
-            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = []; }
+            document.getElementById('form-modal').classList.add('hidden');
+            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = [];
+            }
         }
 
         function addDynamicRow(mode, rowData = null) {
@@ -892,7 +896,6 @@
             const row = document.createElement('div');
             row.className = 'dynamic-row flex flex-col md:flex-row gap-4 items-end border border-slate-200 p-4 rounded-2xl bg-white shadow-sm mb-3 relative';
             let opts = currentData.plans.filter(p => p.type === (mode==='advance_clear'?'expense':mode)).map(p => `<option value="${p.id}" ${rowData?.plan_id===p.id?'selected':''}>[${p.plan_group}] ${p.name}</option>`).join('');
-
             if(mode === 'advance_clear') {
                 row.innerHTML = `<div class="flex-1 w-full"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">เลือกกิจกรรมที่ใช้จริง (ตัดงบ)</label><select class="row-plan w-full text-sm"><option value="">-- พิมพ์ค้นหา --</option>${opts}</select></div><div class="w-full md:w-48"><label class="text-[10px] md:text-xs font-bold text-slate-500 mb-1 block">ค่าใช้จ่าย (฿)</label><input type="number" step="0.01" class="row-amount w-full border p-2 rounded-xl font-bold text-sm text-rose-700 outline-none" required></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-rose-600 bg-rose-50 p-2 hover:bg-rose-100 rounded-xl mb-0.5 transition shrink-0 w-full md:w-auto flex justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
             } else {
@@ -903,10 +906,13 @@
         }
 
         function openForm(mode, data = null) {
-            currentFormMode = mode; currentEditId = typeof data === 'string' ? data : (data ? data.id : null);
-            const f = document.getElementById('form-fields'); f.innerHTML = '';
+            currentFormMode = mode;
+            currentEditId = typeof data === 'string' ? data : (data ? data.id : null);
+            const f = document.getElementById('form-fields');
+            f.innerHTML = '';
             document.getElementById('modal-title').innerText = data ? 'จัดการข้อมูล' : 'สร้างรายการใหม่';
-            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = []; }
+            if(choicesInstances.length > 0) { choicesInstances.forEach(c => c.destroy()); choicesInstances = [];
+            }
 
             if(mode === 'plan') {
                 f.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-4"><div><label class="font-bold text-sm mb-1 block">ประเภท</label><select id="f_type" class="border p-3 rounded-xl w-full font-bold"><option value="income" ${data?.type==='income'?'selected':''}>รายได้</option><option value="expense" ${data?.type==='expense'?'selected':''}>รายจ่าย</option></select></div><div><label class="font-bold text-sm mb-1 block">รหัส</label><input type="text" id="f_pcode" class="border p-3 rounded-xl w-full" value="${data?.code||''}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดใหญ่</label><input type="text" id="f_pgroup" class="border p-3 rounded-xl w-full font-bold" value="${data?.plan_group||''}" required></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">หมวดย่อย</label><input type="text" id="f_psub" class="border p-3 rounded-xl w-full" value="${data?.sub_category||'-'}"></div><div class="md:col-span-2"><label class="font-bold text-sm mb-1 block">ชื่อรายการ</label><input type="text" id="f_pname" class="border p-3 rounded-xl w-full font-extrabold text-base md:text-lg" value="${data?.name||''}" required></div><div><label class="font-bold text-sm mb-1 block">งบตั้งต้น</label><input type="number" id="f_pest" class="border p-3 rounded-xl w-full font-bold text-primary" value="${data?.estimated_amount||0}" required></div><div><label class="font-bold text-sm mb-1 block">Seq (ลำดับการแสดงผล)</label><input type="number" id="f_pseq" class="border p-3 rounded-xl w-full" value="${data?.seq||999}" required></div></div>`;
@@ -933,7 +939,8 @@
         }
 
         async function handleFormSubmit(e) {
-            e.preventDefault(); showLoader();
+            e.preventDefault();
+            showLoader();
             try {
                 if(currentFormMode === 'plan') {
                     const py = { 
@@ -946,89 +953,115 @@
                         seq: parseInt(document.getElementById('f_pseq').value) || 999 
                     };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('budget_plans').update(py).eq('id', currentEditId); dbError = error; } 
-                    else { const { error } = await supabaseClient.from('budget_plans').insert([py]); dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('budget_plans').update(py).eq('id', currentEditId); dbError = error;
+                    } 
+                    else { const { error } = await supabaseClient.from('budget_plans').insert([py]);
+                    dbError = error; }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'income' || currentFormMode === 'expense') {
                     const rows = document.querySelectorAll('.dynamic-row');
-                    if(rows.length === 0) { hideLoader(); return showToast('เพิ่มอย่างน้อย 1 รายการ', 'error'); }
-                    const list = []; 
+                    if(rows.length === 0) { hideLoader(); return showToast('เพิ่มอย่างน้อย 1 รายการ', 'error');
+                    }
+                    const list = [];
                     for (const r of rows) {
-                        const planSelect = r.querySelector('.row-plan'); const amountInput = r.querySelector('.row-amount'); const noteInput = r.querySelector('.row-note');
+                        const planSelect = r.querySelector('.row-plan');
+                        const amountInput = r.querySelector('.row-amount'); const noteInput = r.querySelector('.row-note');
                         if(!planSelect.value || !amountInput.value) continue;
                         list.push({ type: currentFormMode, tx_date: document.getElementById('f_date').value, plan_id: planSelect.value, amount: parseFloat(amountInput.value) || 0, note: noteInput ? noteInput.value : '', created_by: currentUser.id });
                     }
                     if(list.length === 0) throw new Error({message: 'กรุณากรอกข้อมูลให้ครบถ้วน'});
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('transactions').update(list[0]).eq('id', currentEditId); dbError = error; } 
-                    else { const { error } = await supabaseClient.from('transactions').insert(list); dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('transactions').update(list[0]).eq('id', currentEditId); dbError = error;
+                    } 
+                    else { const { error } = await supabaseClient.from('transactions').insert(list);
+                    dbError = error; }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'advance_create') {
                     const userId = document.getElementById('f_adv_user').value;
                     if (!userId) { hideLoader(); return showToast('กรุณาเลือกผู้ยืม', 'error'); }
                     const py = { user_id: userId, contract_no: document.getElementById('f_adv_contract').value, activity_name: document.getElementById('f_adv_act').value, total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, created_at: document.getElementById('f_adv_date').value };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId); dbError = error; } 
-                    else { py.cleared_amount = 0; py.status = 'pending'; const { error } = await supabaseClient.from('cash_advances').insert([py]); dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId);
+                    dbError = error; } 
+                    else { py.cleared_amount = 0;
+                    py.status = 'pending'; const { error } = await supabaseClient.from('cash_advances').insert([py]); dbError = error;
+                    }
                     if(dbError) throw dbError;
                 } else if(currentFormMode === 'advance_clear') {
-                    let tExp = 0; const list = []; const cDate = document.getElementById('f_clear_date').value;
+                    let tExp = 0;
+                    const list = []; const cDate = document.getElementById('f_clear_date').value;
                     document.querySelectorAll('.dynamic-row').forEach(r => { 
                         const pId = r.querySelector('.row-plan').value; const amt = parseFloat(r.querySelector('.row-amount').value); 
                         if(pId && amt > 0) { tExp += amt; list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${activeAdvanceData.contract_no}`, status: 'approved', created_by: currentUser.id }); } 
                     });
                     const tRet = parseFloat(document.getElementById('f_clear_ret').value) || 0;
-                    if((tExp + tRet) <= 0) { hideLoader(); return showToast('ระบุยอดใช้จริง หรือยอดคืน', 'error'); }
+                    if((tExp + tRet) <= 0) { hideLoader(); return showToast('ระบุยอดใช้จริง หรือยอดคืน', 'error');
+                    }
                     const nClear = Number(activeAdvanceData.cleared_amount) + tExp + tRet;
-                    if(list.length > 0) { const { error: txErr } = await supabaseClient.from('transactions').insert(list); if(txErr) throw txErr; }
+                    if(list.length > 0) { const { error: txErr } = await supabaseClient.from('transactions').insert(list); if(txErr) throw txErr;
+                    }
                     const { error: advErr } = await supabaseClient.from('cash_advances').update({ cleared_amount: nClear, status: nClear >= Number(activeAdvanceData.total_amount) ? 'cleared' : 'pending' }).eq('id', activeAdvanceData.id);
                     if(advErr) throw advErr;
                 } else if(currentFormMode === 'personnel') {
                     const py = { name: document.getElementById('f_name').value };
                     let dbError = null;
-                    if(currentEditId) { const { error } = await supabaseClient.from('personnel').update(py).eq('id', currentEditId); dbError = error; } 
-                    else { const { error } = await supabaseClient.from('personnel').insert([py]); dbError = error; }
+                    if(currentEditId) { const { error } = await supabaseClient.from('personnel').update(py).eq('id', currentEditId); dbError = error;
+                    } 
+                    else { const { error } = await supabaseClient.from('personnel').insert([py]);
+                    dbError = error; }
                     if(dbError) throw dbError;
                 }
-                showToast('บันทึกเรียบร้อย'); closeForm(); currentUser ? await loadPrivateData() : await loadPublicData();
+                showToast('บันทึกเรียบร้อย'); closeForm(); currentUser ?
+                await loadPrivateData() : await loadPublicData();
             } catch(err) { 
-                showToast('เกิดข้อผิดพลาด: ' + (err.message || 'บันทึกข้อมูลไม่สำเร็จ'), 'error'); console.error(err); 
+                showToast('เกิดข้อผิดพลาด: ' + (err.message || 'บันทึกข้อมูลไม่สำเร็จ'), 'error');
+                console.error(err); 
             } finally { hideLoader(); }
         }
 
-        function editPlan(id) { openForm('plan', currentData.plans.find(x => x.id === id)); }
-        function editTx(id) { openForm(currentData.txs.find(x => x.id === id).type, currentData.txs.find(x => x.id === id)); }
-        function editPersonnel(id) { openForm('personnel', currentData.personnel.find(x => x.id === id)); }
+        function editPlan(id) { openForm('plan', currentData.plans.find(x => x.id === id));
+        }
+        function editTx(id) { openForm(currentData.txs.find(x => x.id === id).type, currentData.txs.find(x => x.id === id));
+        }
+        function editPersonnel(id) { openForm('personnel', currentData.personnel.find(x => x.id === id));
+        }
         
         async function deleteRow(table, id) { 
             if(confirm('ยืนยันการลบข้อมูลถาวร?')) { 
-                showLoader(); const { error } = await supabaseClient.from(table).delete().eq('id', id); 
-                if(error) { showToast('ไม่สามารถลบได้ อาจมีข้อมูลอื่นผูกพันอยู่', 'error'); } else { showToast('ลบข้อมูลเรียบร้อยแล้ว'); }
-                await loadPrivateData(); hideLoader(); 
+                showLoader();
+                const { error } = await supabaseClient.from(table).delete().eq('id', id); 
+                if(error) { showToast('ไม่สามารถลบได้ อาจมีข้อมูลอื่นผูกพันอยู่', 'error'); } else { showToast('ลบข้อมูลเรียบร้อยแล้ว');
+                }
+                await loadPrivateData(); hideLoader();
             } 
         }
 
         function resetFilter(t) {
-            document.getElementById(`filter-${t}-date`).value = ''; document.getElementById(`filter-${t}-month`).value = ''; document.getElementById(`filter-${t}-text`).value = '';
+            document.getElementById(`filter-${t}-date`).value = '';
+            document.getElementById(`filter-${t}-month`).value = ''; document.getElementById(`filter-${t}-text`).value = '';
             if(document.getElementById(`filter-${t}-status`)) document.getElementById(`filter-${t}-status`).value = 'all';
             renderTx(t === 'inc' ? 'income' : 'expense');
         }
 
-        async function updateStatus(table, id, status) { showLoader(); await supabaseClient.from(table).update({status}).eq('id', id); showToast('อนุมัติแล้ว'); await loadPrivateData(); hideLoader(); }
+        async function updateStatus(table, id, status) { showLoader(); await supabaseClient.from(table).update({status}).eq('id', id); showToast('อนุมัติแล้ว');
+        await loadPrivateData(); hideLoader(); }
 
         function exportData(table) {
             if (table === 'advances') {
                 const sortedAdvances = [...currentData.advances].sort((a, b) => (a.contract_no || "").localeCompare(b.contract_no || "", undefined, {numeric: true}));
                 const exportList = sortedAdvances.map(a => {
                     const p = currentData.personnel.find(x => x.id == a.user_id);
-                    return { 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': p ? p.name : "ไม่พบชื่อ", 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดเคลียร์': a.cleared_amount };
+                    const actualUsed = currentData.txs.filter(t => t.note === `เคลียร์สัญญายืม ${a.contract_no}`).reduce((sum, t) => sum + Number(t.amount), 0);
+                    const returnAmount = Number(a.cleared_amount || 0) - actualUsed;
+                    return { 'วันที่': formatThaiDate(a.created_at), 'สัญญา': a.contract_no, 'ผู้ยืม': p ? p.name : "ไม่พบชื่อ", 'กิจกรรม': a.activity_name, 'ยอดยืม': a.total_amount, 'ยอดใช้จริง': actualUsed, 'ยอดคืนโรงเรียน': returnAmount };
                 });
                 const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportList), "Sheet1"); XLSX.writeFile(wb, `KTU_Advances_Report.xlsx`);
             }
         }
 
         function exportFilteredTx(type, mode) {
-            const pref = type === 'income' ? 'inc' : 'exp'; const val = mode === 'day' ? document.getElementById(`filter-${pref}-date`).value : document.getElementById(`filter-${pref}-month`).value;
+            const pref = type === 'income' ?
+            'inc' : 'exp'; const val = mode === 'day' ? document.getElementById(`filter-${pref}-date`).value : document.getElementById(`filter-${pref}-month`).value;
             if(!val) return showToast(`กรุณาเลือก${mode==='day'?'วันที่':'เดือน'}ที่ต้องการออกรายงานก่อน`, 'error');
             const list = currentData.txs.filter(t => t.type === type && (mode==='day' ? t.tx_date === val : t.tx_date.startsWith(val))).map(t => ({ 'วันที่': formatThaiDate(t.tx_date), 'รายการ': t.budget_plans?.name, 'จำนวนเงิน': t.amount, 'หมายเหตุ': t.note, 'สถานะ': t.status==='approved'?'อนุมัติ':'รออนุมัติ' }));
             if(list.length === 0) return showToast('ไม่พบข้อมูลในเงื่อนไขที่เลือก', 'error');
@@ -1036,17 +1069,21 @@
         }
 
         function exportReport() {
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("report-table")), "Report"); XLSX.writeFile(wb, `KTU_Budget_Report.xlsx`);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById("report-table")), "Report"); XLSX.writeFile(wb, `KTU_Budget_Report.xlsx`);
         }
 
         function exportPublicAdvances() {
-            if (!currentData.advances || currentData.advances.length === 0) { showToast('กำลังเตรียมข้อมูล... โปรดรอสักครู่', 'error'); return; }
+            if (!currentData.advances || currentData.advances.length === 0) { showToast('กำลังเตรียมข้อมูล... โปรดรอสักครู่', 'error');
+            return; }
             const table = document.getElementById("pub-advance-table"); if (!table) return;
             try {
-                const wb = XLSX.utils.book_new(); const ws = XLSX.utils.table_to_sheet(table);
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.table_to_sheet(table);
                 XLSX.utils.book_append_sheet(wb, ws, "Advances_Report"); XLSX.writeFile(wb, `KTU_Advances_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('ดาวน์โหลดไฟล์เรียบร้อยแล้วจ้า!');
-            } catch (err) { showToast('ดาวน์โหลดไม่สำเร็จ: ' + err.message, 'error'); }
+            } catch (err) { showToast('ดาวน์โหลดไม่สำเร็จ: ' + err.message, 'error');
+            }
         }
 
         // ================= สคริปต์ระบบย่อ/ขยาย เมนูด้านซ้ายบนจอคอมพิวเตอร์ =================
