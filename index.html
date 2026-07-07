@@ -794,7 +794,6 @@
             let htmlString = '';
             const list = currentData.txs.filter(t => {
                 if(t.type !== type) return false;
-                if (type === 'expense' && t.note && t.note.includes('เคลียร์สัญญายืม')) return false;
                 if(fDate && t.tx_date !== fDate) return false;
                 if(fMonth && !t.tx_date.startsWith(fMonth)) return false;
                 if(fText && !t.budget_plans?.name?.toLowerCase().includes(fText) && !t.note?.toLowerCase().includes(fText)) return false;
@@ -981,7 +980,7 @@
                     <div class="border border-slate-200 rounded-xl shadow-sm w-full md:w-1/2"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block rounded-t-xl">ชื่อผู้ยืม</label><select id="f_adv_user" class="w-full p-3 outline-none text-sm"><option value="">-- พิมพ์ค้นหาชื่อผู้ยืม --</option>${userOpts}</select></div>
                     <div class="w-full hidden md:block m-0 p-0 h-0"></div>
                     <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full md:w-1/3"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">เลขที่สัญญา</label><input type="text" id="f_adv_contract" class="w-full p-3 outline-none font-extrabold text-base md:text-lg text-primary" value="${data?.contract_no||''}" required></div>
-                    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full flex-1"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อโครงการ / กิจกรรม</label><input type="text" id="f_adv_act" class="w-full p-3 outline-none text-slate-700 font-medium" value="${data?.activity_name||''}" required></div>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm w-full flex-1"><label class="bg-slate-100 text-slate-800 border-b border-slate-200 px-4 py-2.5 font-bold text-sm block">ชื่อโครงการ / กิจกรรม</label><input type="text" id="f_adv_contract_name" class="w-full p-3 outline-none text-slate-700 font-medium" value="${data?.activity_name||''}" required></div>
                     <div class="border-2 border-rose-800 rounded-xl overflow-hidden shadow-sm w-full md:w-1/3"><label class="bg-rose-800 text-white px-4 py-2.5 font-bold text-sm block">ยอดยืมรวม (฿)</label><input type="number" step="0.01" id="f_adv_total" class="w-full p-3 bg-rose-50 outline-none font-black text-xl text-rose-700" value="${data?.total_amount||''}" required></div>
                     ${editClearedHtml}
                 </div>`;
@@ -1057,10 +1056,11 @@
                     const userId = document.getElementById('f_adv_user').value;
                     if (!userId) { hideLoader(); return showToast('กรุณาเลือกผู้ยืม', 'error'); }
                     
+                    const contractNoValue = document.getElementById('f_adv_contract').value;
                     const py = { 
                         user_id: userId, 
-                        contract_no: document.getElementById('f_adv_contract').value, 
-                        activity_name: document.getElementById('f_adv_act').value, 
+                        contract_no: contractNoValue, 
+                        activity_name: document.getElementById('f_adv_contract_name').value, 
                         total_amount: parseFloat(document.getElementById('f_adv_total').value) || 0, 
                         created_at: document.getElementById('f_adv_date').value 
                     };
@@ -1068,7 +1068,6 @@
                     let dbError = null;
                     
                     if(currentEditId) { 
-                        // เมื่อเป็นการแก้ไขสัญญายืมเงิน (รวมถึงการแก้ไขรายละเอียดที่เคลียร์ไปแล้ว)
                         let tExp = 0;
                         const list = [];
                         const rows = document.querySelectorAll('.dynamic-row');
@@ -1079,33 +1078,26 @@
                             const amt = parseFloat(r.querySelector('.row-amount').value);
                             if (pId && amt > 0) {
                                 tExp += amt;
-                                list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${py.contract_no}`, status: 'approved', created_by: currentUser.id });
+                                list.push({ type: 'expense', tx_date: cDate, plan_id: pId, amount: amt, note: `เคลียร์สัญญายืม ${contractNoValue}`, status: 'approved', created_by: currentUser.id });
                             }
                         });
                         
-                        // ถ้าระบบมีกล่องแก้ไขข้อมูลเคลียร์ (f_adv_ret) ให้นำยอดนั้นมาคำนวณ
                         let retInput = document.getElementById('f_adv_ret');
-                        let tRet = retInput ? (parseFloat(retInput.value) || 0) : null;
+                        let tRet = retInput ? (parseFloat(retInput.value) || 0) : 0;
                         
-                        // ดึงข้อมูลเดิมเพื่อใช้ลบ Transaction เก่า
                         const originalAdv = currentData.advances.find(a => a.id === currentEditId);
                         const oldNote = `เคลียร์สัญญายืม ${originalAdv.contract_no}`;
 
-                        if (tRet !== null) {
-                            py.cleared_amount = tExp + tRet;
-                            py.status = py.cleared_amount >= py.total_amount ? 'cleared' : 'pending';
-                        }
+                        py.cleared_amount = tExp + tRet;
+                        py.status = py.cleared_amount >= py.total_amount ? 'cleared' : 'pending';
                         
-                        // 1. อัพเดตข้อมูลสัญญาในตาราง cash_advances
                         const { error } = await supabaseClient.from('cash_advances').update(py).eq('id', currentEditId); 
                         dbError = error; 
                         
-                        if (!dbError && tRet !== null) {
-                            // 2. ลบรายการหักงบ (Transaction) อันเก่าของสัญญานี้ทิ้ง
+                        if (!dbError) {
                             const { error: delErr } = await supabaseClient.from('transactions').delete().eq('note', oldNote);
                             if (delErr) console.error(delErr);
                             
-                            // 3. สร้างรายการหักงบ (Transaction) อันใหม่ตามที่กรอก
                             if (list.length > 0) {
                                 const { error: txErr } = await supabaseClient.from('transactions').insert(list);
                                 if (txErr) console.error(txErr);
