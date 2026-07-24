@@ -965,10 +965,7 @@
                         
                         <div class="p-4 bg-emerald-100/50 border border-emerald-200 rounded-xl mt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div>
-                                <label class="font-bold text-sm text-emerald-900 block">ยอดเงินคงเหลือ (คืนโรงเรียน / ไม่ตัดงบ)</label>
-                                <span class="text-xs text-emerald-700">หากไม่ได้คืนเงินให้ใส่ 0</span>
-                            </div>
-                            <input type="number" step="any"" id="f_adv_ret" class="border border-emerald-300 p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-48 bg-white outline-none md:text-right shadow-inner" value="${returnAmt > 0 ? returnAmt : 0}">
+                                <label class="font-bold text-sm text-emerald-900 block mb-1">ยอดเงินคงเหลือ (ไม่เข้างบ)</label><input type="number" step="any" id="f_clear_ret" class="border p-3 rounded-xl font-black text-xl text-emerald-700 w-full md:w-1/2 bg-white" value="0">
                         </div>
                     </div>
                     `;
