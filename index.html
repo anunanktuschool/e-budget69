@@ -236,7 +236,8 @@
         <th class="bg-white p-3 md:p-4 md:pl-6 w-24">รหัส</th>
         <th class="bg-white p-3 md:p-4 min-w-[200px]">รายการ</th>
         <th class="bg-white p-3 md:p-4 text-right">ตั้งต้น</th>
-        <th class="bg-white p-3 md:p-4 text-right">รับ/จ่าย</th>
+        <th class="bg-white p-3 md:p-4 text-right text-blue-700">ประจำเดือน</th>
+        <th class="bg-white p-3 md:p-4 text-right">ยอดสะสม</th>
         <th class="bg-white p-3 md:p-4 md:pr-6 text-right">คงเหลือ</th>
     </tr>
 </thead>
@@ -694,69 +695,84 @@
 
             let htmlString = '';
             let totalEst = { income: 0, expense: 0 };
-            let totalAct = { income: 0, expense: 0 };
+            let totalActMonthly = { income: 0, expense: 0 };
+            let totalActAccum = { income: 0, expense: 0 };
 
             ['income', 'expense'].forEach(type => {
                 const tName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
                 const tColorHex = type === 'income' ? 'text-emerald-700' : 'text-rose-800';
                 const bgHeader = type === 'income' ? 'bg-emerald-50 text-emerald-950' : 'bg-rose-50 text-rose-950';
-                let grandEst = 0, grandAct = 0;
+                let grandEst = 0, grandActMonthly = 0, grandActAccum = 0;
 
                 const plans = currentData.plans.filter(p => p.type === type && p.name.toLowerCase().includes(search));
                 const groups = [...new Set(plans.map(p => p.plan_group))];
 
                 groups.forEach(gName => {
-                    htmlString += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="5" class="p-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
-                    let gEst = 0, gAct = 0;
+                    htmlString += `<tr class="${bgHeader} border-b-2 border-white font-extrabold"><td colspan="6" class="p-3 md:p-4 text-sm md:text-lg">${gName}</td></tr>`;
+                    let gEst = 0, gActMonthly = 0, gActAccum = 0;
                     const gPlans = plans.filter(p => p.plan_group === gName);
                     const subs = [...new Set(gPlans.map(p => p.sub_category))];
                     
                     subs.forEach(sName => {
-                        if(sName && sName !== '-') htmlString += `<tr><td colspan="5" class="p-2 pl-4 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
+                        if(sName && sName !== '-') htmlString += `<tr><td colspan="6" class="p-2 pl-4 md:p-3 md:pl-8 font-bold text-slate-500 bg-slate-50 border-b border-slate-100 underline text-xs md:text-base">${sName}</td></tr>`;
                         gPlans.filter(p => p.sub_category === sName).forEach(p => {
-                            const txs = currentData.txs.filter(t => {
-                                if(t.plan_id !== p.id || t.status !== 'approved') return false;
-                                if(selMonth === 'all') return true;
-                                return t.tx_date.substring(0, 7) <= selMonth; 
-                            });
+                            const txsAll = currentData.txs.filter(t => t.plan_id === p.id && t.status === 'approved');
                             
-                            const actual = txs.reduce((s,t) => s + Number(t.amount), 0);
+                            let actualMonthly = 0;
+                            let actualAccumulated = 0;
+
+                            if (selMonth === 'all') {
+                                actualAccumulated = txsAll.reduce((s,t) => s + Number(t.amount), 0);
+                                actualMonthly = actualAccumulated; 
+                            } else {
+                                actualMonthly = txsAll.filter(t => t.tx_date.substring(0, 7) === selMonth).reduce((s,t) => s + Number(t.amount), 0);
+                                actualAccumulated = txsAll.filter(t => t.tx_date.substring(0, 7) <= selMonth).reduce((s,t) => s + Number(t.amount), 0);
+                            }
+                            
                             const est = Number(p.estimated_amount);
-                            gEst += est; gAct += actual;
+                            gEst += est; 
+                            gActMonthly += actualMonthly;
+                            gActAccum += actualAccumulated;
+                            
                             htmlString += `<tr class="hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-base">
                                 <td class="p-3 md:p-4 md:pl-6 text-slate-500 font-medium align-top whitespace-nowrap">${p.code||''}</td>
                                 <td class="p-3 md:p-4 font-medium text-slate-700 align-top leading-tight min-w-[200px]">${p.name}</td>
                                 <td class="p-3 md:p-4 text-right align-top whitespace-nowrap">${est>0?formatMoney(est):'-'}</td>
-                                <td class="p-3 md:p-4 text-right font-extrabold ${tColorHex} align-top whitespace-nowrap">${actual>0?formatMoney(actual):'-'}</td>
-                                <td class="p-3 md:p-4 md:pr-6 text-right font-medium align-top whitespace-nowrap">${(p.name.includes('รายได้อื่นๆ') || p.name.includes('รายได้อื่น ๆ')) && (est-actual) < 0 ? '-' : formatMoney(est-actual)}</td>
+                                <td class="p-3 md:p-4 text-right font-bold text-blue-700 align-top whitespace-nowrap">${actualMonthly>0?formatMoney(actualMonthly):'-'}</td>
+                                <td class="p-3 md:p-4 text-right font-extrabold ${tColorHex} align-top whitespace-nowrap">${actualAccumulated>0?formatMoney(actualAccumulated):'-'}</td>
+                                <td class="p-3 md:p-4 md:pr-6 text-right font-medium align-top whitespace-nowrap">${(p.name.includes('รายได้อื่นๆ') || p.name.includes('รายได้อื่น ๆ')) && (est-actualAccumulated) < 0 ? '-' : formatMoney(est-actualAccumulated)}</td>
                             </tr>`;
                         });
                     });
                     htmlString += `<tr class="bg-slate-100 font-extrabold border-t border-slate-200 text-xs md:text-base">
                         <td colspan="2" class="p-3 md:p-4 text-right">รวม ${gName}</td>
                         <td class="p-3 md:p-4 text-right whitespace-nowrap">${formatMoney(gEst)}</td>
-                        <td class="p-3 md:p-4 text-right ${tColorHex} whitespace-nowrap">${formatMoney(gAct)}</td>
-                        <td class="p-3 md:p-4 md:pr-6 text-right whitespace-nowrap">${formatMoney(gEst-gAct)}</td>
+                        <td class="p-3 md:p-4 text-right text-blue-800 whitespace-nowrap">${formatMoney(gActMonthly)}</td>
+                        <td class="p-3 md:p-4 text-right ${tColorHex} whitespace-nowrap">${formatMoney(gActAccum)}</td>
+                        <td class="p-3 md:p-4 md:pr-6 text-right whitespace-nowrap">${formatMoney(gEst-gActAccum)}</td>
                     </tr>`;
-                    grandEst += gEst; grandAct += gAct;
+                    grandEst += gEst; grandActMonthly += gActMonthly; grandActAccum += gActAccum;
                 });
                 
                 htmlString += `<tr class="bg-slate-900 text-white font-extrabold text-sm md:text-xl border-b-8 border-white">
                     <td colspan="2" class="p-3 md:p-5 text-right">รวม${tName}ทั้งสิ้น</td>
                     <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandEst)}</td>
-                    <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandAct)}</td>
-                    <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">${formatMoney(grandEst-grandAct)}</td>
+                    <td class="p-3 md:p-5 text-right text-blue-300 whitespace-nowrap">${formatMoney(grandActMonthly)}</td>
+                    <td class="p-3 md:p-5 text-right whitespace-nowrap">${formatMoney(grandActAccum)}</td>
+                    <td class="p-3 md:p-5 md:pr-6 text-right whitespace-nowrap">${formatMoney(grandEst-grandActAccum)}</td>
                 </tr>`;
                 totalEst[type] = grandEst;
-                totalAct[type] = grandAct;
+                totalActMonthly[type] = grandActMonthly;
+                totalActAccum[type] = grandActAccum;
             });
 
-            let netAct = totalAct.income - totalAct.expense;
-            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td><td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalAct.income)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
-            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td><td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalAct.expense)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
+            let netAct = totalActAccum.income - totalActAccum.expense;
+            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-t-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายรับทั้งหมด</td><td class="p-3 md:p-4 text-right text-blue-800">${formatMoney(totalActMonthly.income)}</td><td class="p-3 md:p-4 text-right text-emerald-800">${formatMoney(totalActAccum.income)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
+            htmlString += `<tr class="bg-slate-200 text-slate-800 font-extrabold text-sm md:text-lg border-b-4 border-white"><td colspan="3" class="p-3 md:p-4 text-right">สรุปยอดรวมรายจ่ายทั้งหมด</td><td class="p-3 md:p-4 text-right text-blue-800">${formatMoney(totalActMonthly.expense)}</td><td class="p-3 md:p-4 text-right text-rose-800">${formatMoney(totalActAccum.expense)}</td><td class="p-3 md:p-4 text-right"></td></tr>`;
+            
             let statusText = netAct >= 0 ? 'รายได้รับจริงมากกว่ารายจ่ายจริง' : 'รายได้ต่ำกว่าค่าใช้จ่าย';
             let bgSummary = netAct >= 0 ? 'bg-emerald-800' : 'bg-rose-800';
-            htmlString += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg"><td colspan="3" class="p-4 md:p-6 text-right">${monthLabel} : ${statusText} (คงเหลือ)</td><td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td></tr>`;
+            htmlString += `<tr class="${bgSummary} text-white font-black text-sm md:text-xl border-t-6 border-white shadow-lg"><td colspan="3" class="p-4 md:p-6 text-right">${monthLabel} : ${statusText} (คงเหลือ)</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td><td class="p-4 md:p-6 text-right whitespace-nowrap">${formatMoney(Math.abs(netAct))}</td><td class="p-4 md:p-6 text-right whitespace-nowrap"></td></tr>`;
             
             tbl.innerHTML = htmlString;
         }
